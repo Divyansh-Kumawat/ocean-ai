@@ -1,0 +1,307 @@
+{
+  "api_version": "1.0",
+  "base_url": "https://api.eshop-checkout.com/v1",
+  "endpoints": {
+    "cart": {
+      "get_cart": {
+        "method": "GET",
+        "url": "/cart/{session_id}",
+        "description": "Retrieve current cart contents",
+        "parameters": {
+          "session_id": "string"
+        },
+        "response": {
+          "items": [
+            {
+              "id": "string",
+              "name": "string",
+              "price": "number",
+              "quantity": "number"
+            }
+          ],
+          "subtotal": "number"
+        }
+      },
+      "add_item": {
+        "method": "POST",
+        "url": "/cart/{session_id}/items",
+        "description": "Add item to cart",
+        "parameters": {
+          "session_id": "string"
+        },
+        "request_body": {
+          "item_id": "string",
+          "quantity": "number"
+        },
+        "response": {
+          "success": "boolean",
+          "message": "string",
+          "cart_total": "number"
+        }
+      },
+      "update_quantity": {
+        "method": "PUT",
+        "url": "/cart/{session_id}/items/{item_id}",
+        "description": "Update item quantity",
+        "parameters": {
+          "session_id": "string",
+          "item_id": "string"
+        },
+        "request_body": {
+          "quantity": "number"
+        },
+        "response": {
+          "success": "boolean",
+          "cart_total": "number"
+        }
+      },
+      "remove_item": {
+        "method": "DELETE",
+        "url": "/cart/{session_id}/items/{item_id}",
+        "description": "Remove item from cart",
+        "parameters": {
+          "session_id": "string",
+          "item_id": "string"
+        },
+        "response": {
+          "success": "boolean",
+          "cart_total": "number"
+        }
+      }
+    },
+    "discounts": {
+      "validate_code": {
+        "method": "POST",
+        "url": "/discounts/validate",
+        "description": "Validate discount code",
+        "request_body": {
+          "code": "string",
+          "cart_total": "number"
+        },
+        "response": {
+          "valid": "boolean",
+          "discount_percentage": "number",
+          "discount_amount": "number",
+          "message": "string"
+        }
+      },
+      "apply_discount": {
+        "method": "POST",
+        "url": "/cart/{session_id}/discount",
+        "description": "Apply discount to cart",
+        "parameters": {
+          "session_id": "string"
+        },
+        "request_body": {
+          "discount_code": "string"
+        },
+        "response": {
+          "success": "boolean",
+          "discount_applied": "number",
+          "new_total": "number",
+          "message": "string"
+        }
+      }
+    },
+    "shipping": {
+      "get_options": {
+        "method": "GET",
+        "url": "/shipping/options",
+        "description": "Get available shipping options",
+        "response": {
+          "options": [
+            {
+              "id": "string",
+              "name": "string",
+              "cost": "number",
+              "delivery_time": "string"
+            }
+          ]
+        }
+      },
+      "calculate_cost": {
+        "method": "POST",
+        "url": "/shipping/calculate",
+        "description": "Calculate shipping cost",
+        "request_body": {
+          "shipping_method": "string",
+          "cart_total": "number",
+          "delivery_address": {
+            "street": "string",
+            "city": "string",
+            "state": "string",
+            "zip_code": "string",
+            "country": "string"
+          }
+        },
+        "response": {
+          "shipping_cost": "number",
+          "estimated_delivery": "string"
+        }
+      }
+    },
+    "payment": {
+      "process_payment": {
+        "method": "POST",
+        "url": "/payment/process",
+        "description": "Process payment for order",
+        "request_body": {
+          "session_id": "string",
+          "payment_method": "string",
+          "customer_info": {
+            "name": "string",
+            "email": "string",
+            "address": "string"
+          },
+          "payment_details": {
+            "card_number": "string",
+            "expiry_date": "string",
+            "cvv": "string",
+            "cardholder_name": "string"
+          },
+          "order_total": "number"
+        },
+        "response": {
+          "success": "boolean",
+          "transaction_id": "string",
+          "order_id": "string",
+          "message": "string",
+          "confirmation_email": "boolean"
+        }
+      },
+      "validate_payment": {
+        "method": "POST",
+        "url": "/payment/validate",
+        "description": "Validate payment information",
+        "request_body": {
+          "payment_method": "string",
+          "payment_details": "object"
+        },
+        "response": {
+          "valid": "boolean",
+          "errors": ["string"],
+          "message": "string"
+        }
+      }
+    },
+    "orders": {
+      "create_order": {
+        "method": "POST",
+        "url": "/orders",
+        "description": "Create new order",
+        "request_body": {
+          "session_id": "string",
+          "customer_info": {
+            "name": "string",
+            "email": "string",
+            "address": "string"
+          },
+          "shipping_method": "string",
+          "payment_method": "string",
+          "discount_code": "string"
+        },
+        "response": {
+          "order_id": "string",
+          "status": "string",
+          "total_amount": "number",
+          "estimated_delivery": "string"
+        }
+      },
+      "get_order": {
+        "method": "GET",
+        "url": "/orders/{order_id}",
+        "description": "Get order details",
+        "parameters": {
+          "order_id": "string"
+        },
+        "response": {
+          "order_id": "string",
+          "status": "string",
+          "items": "array",
+          "total_amount": "number",
+          "customer_info": "object",
+          "tracking_number": "string"
+        }
+      }
+    },
+    "validation": {
+      "validate_email": {
+        "method": "POST",
+        "url": "/validation/email",
+        "description": "Validate email format and existence",
+        "request_body": {
+          "email": "string"
+        },
+        "response": {
+          "valid": "boolean",
+          "message": "string"
+        }
+      },
+      "validate_form": {
+        "method": "POST",
+        "url": "/validation/form",
+        "description": "Validate complete checkout form",
+        "request_body": {
+          "customer_info": {
+            "name": "string",
+            "email": "string",
+            "address": "string"
+          },
+          "cart_items": "array",
+          "payment_method": "string",
+          "shipping_method": "string"
+        },
+        "response": {
+          "valid": "boolean",
+          "errors": {
+            "name": "string",
+            "email": "string",
+            "address": "string",
+            "cart": "string",
+            "payment": "string"
+          },
+          "message": "string"
+        }
+      }
+    }
+  },
+  "error_responses": {
+    "400": {
+      "description": "Bad Request - Invalid input parameters",
+      "response": {
+        "error": "string",
+        "message": "string",
+        "details": "object"
+      }
+    },
+    "401": {
+      "description": "Unauthorized - Invalid or missing authentication",
+      "response": {
+        "error": "string",
+        "message": "string"
+      }
+    },
+    "404": {
+      "description": "Not Found - Resource does not exist",
+      "response": {
+        "error": "string",
+        "message": "string"
+      }
+    },
+    "422": {
+      "description": "Unprocessable Entity - Validation errors",
+      "response": {
+        "error": "string",
+        "message": "string",
+        "validation_errors": "array"
+      }
+    },
+    "500": {
+      "description": "Internal Server Error - Server processing error",
+      "response": {
+        "error": "string",
+        "message": "string"
+      }
+    }
+  }
+}
