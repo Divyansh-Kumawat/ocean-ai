@@ -1,0 +1,261 @@
+E-Shop Checkout UI/UX Design Guide
+
+===========================================
+
+VISUAL DESIGN SPECIFICATIONS
+
+Color Palette:
+- Primary Background: #f5f5f5 (light gray)
+- Content Background: #ffffff (white)
+- Text Primary: #333333 (dark gray)
+- Text Secondary: #555555 (medium gray)
+- Text Muted: #666666 (lighter gray)
+- Error Text: red (CSS color name)
+- Success Background: #d4edda (light green)
+- Success Text: #155724 (dark green)
+- Error Background: #f8d7da (light red)
+- Error Border: #f5c6cb (light red border)
+
+Button Colors:
+- Pay Now Button: green (CSS color name) - REQUIRED
+- Pay Now Hover: darkgreen (CSS color name)
+- Pay Now Disabled: #cccccc (gray)
+- Add to Cart: #28a745 (green)
+- Quantity Controls: #007bff (blue)
+- Remove Button: #dc3545 (red)
+- Apply Discount: #6c757d (gray)
+
+Typography:
+- Font Family: Arial, sans-serif
+- Body Text: 14px
+- Headings: Bold, varying sizes
+- Error Messages: 12px, red color
+- Success Messages: 18px, bold
+
+===========================================
+
+LAYOUT SPECIFICATIONS
+
+Container:
+- Max Width: 800px
+- Center Aligned: margin 0 auto
+- Padding: 20px
+- Background: White with shadow
+
+Sections:
+- Margin Bottom: 30px between sections
+- Padding: 20px internal
+- Border: 1px solid #dddddd
+- Border Radius: 5px
+
+Form Elements:
+- Full Width: 100% for text inputs
+- Padding: 10px
+- Border: 1px solid #dddddd
+- Border Radius: 4px
+- Font Size: 14px
+
+===========================================
+
+ERROR HANDLING SPECIFICATIONS
+
+Error Message Display:
+- Color: red (CSS color name) - REQUIRED
+- Font Size: 12px
+- Position: Below respective input field
+- Margin Top: 5px
+- Initial State: display: none
+
+Error Visibility Rules:
+- Show Error: When field validation fails
+- Hide Error: When user focuses on field OR when validation passes
+- Real-time: Errors appear/disappear as user types
+
+Specific Error Messages:
+- Name Field: "Full name is required"
+- Email Field: "Valid email address is required"
+- Address Field: "Address is required"
+- Discount Code: "Invalid or expired discount code"
+- Empty Discount: "Please enter a discount code"
+
+===========================================
+
+INTERACTIVE ELEMENTS
+
+Pay Now Button:
+- Background Color: green (CSS color name) - MANDATORY
+- Text Color: white
+- Padding: 15px 30px
+- Font Size: 16px
+- Border Radius: 5px
+- Full Width: 100%
+- Disabled State: Background #cccccc, cursor not-allowed
+- Hover State: Background darkgreen
+- Active Condition: Enabled only when form valid AND cart not empty
+
+Form Validation States:
+- Invalid Field: Red error text visible below field
+- Valid Field: No error text visible
+- Focus State: Error text hidden on focus
+- Real-time: Validation occurs on input/change events
+
+Radio Button Groups:
+- Margin: 10px vertical spacing
+- Label Position: Inline to the right of radio button
+- Default Selection: First option in group
+- Visual Feedback: Standard browser radio styling
+
+===========================================
+
+CART INTERACTION DESIGN
+
+Cart Item Display:
+- Layout: Flex row with space-between
+- Alignment: Center aligned items
+- Padding: 10px per item
+- Border Bottom: 1px solid #eeeeee (except last item)
+
+Quantity Controls:
+- Button Size: 25px × 25px square
+- Button Color: #007bff (blue)
+- Button Hover: #0056b3 (darker blue)
+- Input Width: 50px centered
+- Margin: 0 5px between elements
+
+Add to Cart Section:
+- Background: #f8f9fa (light gray)
+- Padding: 15px
+- Border Radius: 5px
+- Form Layout: Flex row with gap
+
+Empty Cart State:
+- Message: "Your cart is empty"
+- Alignment: Center justified
+- Padding: 20px
+- Color: #666666 (muted gray)
+
+===========================================
+
+DISCOUNT CODE INTERFACE
+
+Input Layout:
+- Display: Flex row
+- Gap: 10px between input and button
+- Input: Flex grow to fill space
+- Button: Fixed width content
+
+Success Message:
+- Background: #d4edda (light green)
+- Text Color: #155724 (dark green)
+- Border: 1px solid #c3e6cb
+- Padding: 8px
+- Border Radius: 4px
+
+Error Message:
+- Background: #f8d7da (light red)
+- Text Color: #721c24 (dark red)
+- Border: 1px solid #f5c6cb
+- Padding: 8px
+- Border Radius: 4px
+
+Message Display:
+- Initial State: display: none
+- Margin Top: 10px
+- Auto Clear: No (persists until next action)
+
+===========================================
+
+ORDER SUMMARY STYLING
+
+Totals Section:
+- Background: #f8f9fa (light gray)
+- Padding: 20px
+- Border Radius: 5px
+- Margin Top: 20px
+
+Total Line Items:
+- Display: Flex with space-between
+- Margin Bottom: 10px
+- Padding: 5px vertical
+
+Final Total Row:
+- Border Top: 2px solid #333333
+- Padding Top: 10px
+- Font Weight: Bold
+- Font Size: 18px
+
+Discount Display:
+- Negative Amount: Show as "-$X.XX"
+- Zero Amount: Show as "$0.00"
+- Color: Inherit from parent
+
+===========================================
+
+SUCCESS PAGE SPECIFICATIONS
+
+Success Message:
+- Background: #d4edda (light green)
+- Text Color: #155724 (dark green)
+- Border: 1px solid #c3e6cb
+- Padding: 15px
+- Border Radius: 5px
+- Text Align: Center
+- Font Size: 18px
+- Font Weight: Bold
+- Content: "Payment Successful!" - EXACT TEXT REQUIRED
+
+Page Replacement:
+- Hide: Entire checkout form
+- Show: Success message and confirmation text
+- Layout: Centered container maintained
+
+===========================================
+
+RESPONSIVE BEHAVIOR
+
+Mobile Considerations:
+- Container: Responsive padding
+- Form Elements: Full width maintained
+- Button Text: No wrapping
+- Cart Items: Stack on small screens
+- Touch Targets: Minimum 44px height
+
+Desktop Experience:
+- Fixed Maximum Width: 800px
+- Centered Layout: Auto margins
+- Hover States: All interactive elements
+- Keyboard Navigation: Tab order logical
+
+===========================================
+
+ACCESSIBILITY SPECIFICATIONS
+
+Form Labels:
+- Association: All inputs have proper label elements
+- Required Fields: Marked with asterisk (*)
+- Error Association: aria-describedby for error messages
+
+Interactive Elements:
+- Focus Indicators: Browser default maintained
+- Color Contrast: Sufficient for all text
+- Alternative Text: Not applicable (no images)
+
+Semantic HTML:
+- Form Elements: Proper input types (email, number, radio)
+- Headings: Hierarchical structure (h1, h2, h3)
+- Lists: Proper list markup where applicable
+
+===========================================
+
+ANIMATION SPECIFICATIONS
+
+Transitions:
+- Button Hover: Instant color change (no animation)
+- Error Display: Instant show/hide (no fade)
+- Form Updates: Immediate response
+- Cart Updates: Instant DOM manipulation
+
+Performance:
+- No Heavy Animations: Maintain 60fps
+- Instant Feedback: User actions trigger immediate visual response
+- Smooth Scrolling: Browser default behavior
