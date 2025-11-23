@@ -1,0 +1,667 @@
+[
+  {
+    "Test_ID": "TC-001",
+    "Feature": "Discount Code",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains at least one item"
+    ],
+    "Test_Scenario": "Apply valid SAVE15 discount code",
+    "Steps": [
+      "Enter 'SAVE15' in discount code field",
+      "Click 'Apply' button",
+      "Verify success message appears",
+      "Check that 15% discount is applied to subtotal"
+    ],
+    "Expected_Result": "Discount applied successfully, total reduced by 15%, success message displayed",
+    "Grounded_In": [
+      "product_specs.md#discount_application_rules",
+      "product_specs.md#valid_discount_codes"
+    ],
+    "Risk": "Medium",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-002",
+    "Feature": "Discount Code",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains at least one item"
+    ],
+    "Test_Scenario": "Apply invalid discount code",
+    "Steps": [
+      "Enter 'INVALID123' in discount code field",
+      "Click 'Apply' button",
+      "Verify error message appears"
+    ],
+    "Expected_Result": "Error message 'Invalid or expired discount code' displayed in red",
+    "Grounded_In": [
+      "ui_ux_guide.txt#error_handling_specifications",
+      "product_specs.md#edge_cases"
+    ],
+    "Risk": "Low",
+    "Priority": "P2"
+  },
+  {
+    "Test_ID": "TC-003",
+    "Feature": "Discount Code",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains at least one item"
+    ],
+    "Test_Scenario": "Apply discount code with case sensitivity test",
+    "Steps": [
+      "Enter 'save15' (lowercase) in discount code field",
+      "Click 'Apply' button",
+      "Verify discount is applied correctly"
+    ],
+    "Expected_Result": "Discount applied successfully (case insensitive), 15% reduction in total",
+    "Grounded_In": [
+      "product_specs.md#discount_application_rules"
+    ],
+    "Risk": "Low",
+    "Priority": "P2"
+  },
+  {
+    "Test_ID": "TC-004",
+    "Feature": "Discount Code",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains at least one item"
+    ],
+    "Test_Scenario": "Apply empty discount code",
+    "Steps": [
+      "Leave discount code field empty",
+      "Click 'Apply' button",
+      "Verify appropriate error message appears"
+    ],
+    "Expected_Result": "Error message 'Please enter a discount code' displayed",
+    "Grounded_In": [
+      "product_specs.md#edge_cases",
+      "ui_ux_guide.txt#error_handling_specifications"
+    ],
+    "Risk": "Low",
+    "Priority": "P3"
+  },
+  {
+    "Test_ID": "TC-005",
+    "Feature": "Discount Code",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains at least one item"
+    ],
+    "Test_Scenario": "Apply discount code with whitespace",
+    "Steps": [
+      "Enter '  SAVE15  ' (with leading/trailing spaces) in discount code field",
+      "Click 'Apply' button",
+      "Verify discount is applied correctly"
+    ],
+    "Expected_Result": "Discount applied successfully after trimming whitespace",
+    "Grounded_In": [
+      "product_specs.md#edge_cases"
+    ],
+    "Risk": "Low",
+    "Priority": "P3"
+  },
+  {
+    "Test_ID": "TC-006",
+    "Feature": "Shipping",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains items"
+    ],
+    "Test_Scenario": "Verify default Standard shipping selection",
+    "Steps": [
+      "Load checkout page",
+      "Verify Standard Shipping radio button is selected by default",
+      "Check shipping cost display shows $0.00",
+      "Verify total calculation excludes shipping cost"
+    ],
+    "Expected_Result": "Standard shipping selected by default, shipping cost $0.00, no additional charges",
+    "Grounded_In": [
+      "product_specs.md#shipping_options",
+      "checkout.html#element_ids"
+    ],
+    "Risk": "Low",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-007",
+    "Feature": "Shipping",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains items"
+    ],
+    "Test_Scenario": "Select Express shipping with additional cost",
+    "Steps": [
+      "Click Express Shipping radio button",
+      "Verify shipping cost updates to $10.00",
+      "Check that total is recalculated with shipping cost",
+      "Verify shipping cost is added after discount calculation"
+    ],
+    "Expected_Result": "Express shipping selected, shipping cost $10.00 added to total",
+    "Grounded_In": [
+      "product_specs.md#shipping_options",
+      "product_specs.md#price_calculations"
+    ],
+    "Risk": "Medium",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-008",
+    "Feature": "Shipping",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains items",
+      "Discount applied"
+    ],
+    "Test_Scenario": "Change shipping method with discount applied",
+    "Steps": [
+      "Apply SAVE15 discount code",
+      "Switch from Standard to Express shipping",
+      "Verify shipping cost is added after discount",
+      "Check final calculation: (Subtotal - Discount) + Shipping"
+    ],
+    "Expected_Result": "Shipping cost correctly added after discount calculation",
+    "Grounded_In": [
+      "product_specs.md#price_calculations"
+    ],
+    "Risk": "Medium",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-009",
+    "Feature": "Payment",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Form is valid",
+      "Cart is not empty"
+    ],
+    "Test_Scenario": "Verify default Credit Card payment selection",
+    "Steps": [
+      "Load checkout page",
+      "Verify Credit Card radio button is selected by default",
+      "Ensure form validation allows proceeding",
+      "Verify Pay Now button state"
+    ],
+    "Expected_Result": "Credit Card selected by default, form validation passes when complete",
+    "Grounded_In": [
+      "product_specs.md#payment_methods",
+      "checkout.html#element_ids"
+    ],
+    "Risk": "Low",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-010",
+    "Feature": "Payment",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Form is valid",
+      "Cart is not empty"
+    ],
+    "Test_Scenario": "Select PayPal payment method and process payment",
+    "Steps": [
+      "Click PayPal radio button",
+      "Verify PayPal is selected",
+      "Complete all required form fields",
+      "Click Pay Now button",
+      "Verify success message appears"
+    ],
+    "Expected_Result": "Payment processed with PayPal method, 'Payment Successful!' message displayed",
+    "Grounded_In": [
+      "product_specs.md#payment_methods",
+      "ui_ux_guide.txt#success_page_specifications"
+    ],
+    "Risk": "High",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-011",
+    "Feature": "Payment",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart is not empty",
+      "All form fields completed"
+    ],
+    "Test_Scenario": "Verify Pay Now button is green",
+    "Steps": [
+      "Complete all required form fields",
+      "Add item to cart",
+      "Verify Pay Now button is enabled",
+      "Check button background color is green"
+    ],
+    "Expected_Result": "Pay Now button displays green background color when form is valid",
+    "Grounded_In": [
+      "ui_ux_guide.txt#interactive_elements",
+      "product_specs.md#order_processing"
+    ],
+    "Risk": "Low",
+    "Priority": "P2"
+  },
+  {
+    "Test_ID": "TC-012",
+    "Feature": "Validation",
+    "Preconditions": [
+      "Checkout page is loaded"
+    ],
+    "Test_Scenario": "Submit form with empty required name field",
+    "Steps": [
+      "Leave name field empty",
+      "Fill email and address fields with valid data",
+      "Add item to cart",
+      "Verify Pay Now button is disabled",
+      "Check name field error message"
+    ],
+    "Expected_Result": "Red error message 'Full name is required' displayed below name field, Pay Now button disabled",
+    "Grounded_In": [
+      "ui_ux_guide.txt#error_handling_specifications",
+      "product_specs.md#form_validation"
+    ],
+    "Risk": "Medium",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-013",
+    "Feature": "Validation",
+    "Preconditions": [
+      "Checkout page is loaded"
+    ],
+    "Test_Scenario": "Enter invalid email format",
+    "Steps": [
+      "Enter 'invalid-email' in email field",
+      "Fill name and address fields with valid data",
+      "Add item to cart",
+      "Check for email validation error",
+      "Verify error appears in red text"
+    ],
+    "Expected_Result": "Red error message 'Valid email address is required' displayed below email field",
+    "Grounded_In": [
+      "ui_ux_guide.txt#error_handling_specifications",
+      "product_specs.md#form_validation"
+    ],
+    "Risk": "Medium",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-014",
+    "Feature": "Validation",
+    "Preconditions": [
+      "Checkout page is loaded"
+    ],
+    "Test_Scenario": "Submit form with empty address field",
+    "Steps": [
+      "Fill name and email fields with valid data",
+      "Leave address field empty",
+      "Add item to cart",
+      "Verify Pay Now button is disabled",
+      "Check address field error message"
+    ],
+    "Expected_Result": "Red error message 'Address is required' displayed below address field",
+    "Grounded_In": [
+      "ui_ux_guide.txt#error_handling_specifications",
+      "product_specs.md#form_validation"
+    ],
+    "Risk": "Medium",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-015",
+    "Feature": "Validation",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Form has validation errors"
+    ],
+    "Test_Scenario": "Error disappears when field is corrected",
+    "Steps": [
+      "Enter invalid email to trigger error",
+      "Verify red error message appears",
+      "Focus on email field",
+      "Enter valid email format",
+      "Verify error message disappears"
+    ],
+    "Expected_Result": "Error message disappears when user corrects input or focuses on field",
+    "Grounded_In": [
+      "ui_ux_guide.txt#error_handling_specifications",
+      "product_specs.md#form_validation"
+    ],
+    "Risk": "Low",
+    "Priority": "P2"
+  },
+  {
+    "Test_ID": "TC-016",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart is empty"
+    ],
+    "Test_Scenario": "Add single item to cart",
+    "Steps": [
+      "Select 'Laptop' from product dropdown",
+      "Set quantity to 1",
+      "Click 'Add to Cart' button",
+      "Verify item appears in cart with correct details",
+      "Check price calculation"
+    ],
+    "Expected_Result": "Laptop added to cart, quantity 1, total $999.99 displayed",
+    "Grounded_In": [
+      "product_specs.md#cart_item_management",
+      "checkout.html#element_ids"
+    ],
+    "Risk": "High",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-017",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart is empty"
+    ],
+    "Test_Scenario": "Add multiple quantity of same item",
+    "Steps": [
+      "Select 'Wireless Mouse' from product dropdown",
+      "Set quantity to 3",
+      "Click 'Add to Cart' button",
+      "Verify item appears with quantity 3",
+      "Check total calculation (3 × $29.99 = $89.97)"
+    ],
+    "Expected_Result": "Mouse added to cart with quantity 3, total $89.97 displayed",
+    "Grounded_In": [
+      "product_specs.md#cart_item_management",
+      "product_specs.md#price_calculations"
+    ],
+    "Risk": "Medium",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-018",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains one item"
+    ],
+    "Test_Scenario": "Update item quantity using plus button",
+    "Steps": [
+      "Click '+' button to increase quantity",
+      "Verify quantity increases by 1",
+      "Verify total recalculates correctly",
+      "Check real-time update behavior"
+    ],
+    "Expected_Result": "Quantity increases, totals recalculate in real-time",
+    "Grounded_In": [
+      "product_specs.md#cart_item_management",
+      "ui_ux_guide.txt#cart_interaction_design"
+    ],
+    "Risk": "Medium",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-019",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains item with quantity > 1"
+    ],
+    "Test_Scenario": "Update item quantity using minus button",
+    "Steps": [
+      "Click '-' button to decrease quantity",
+      "Verify quantity decreases by 1",
+      "Verify total recalculates correctly",
+      "Test behavior when quantity reaches 1"
+    ],
+    "Expected_Result": "Quantity decreases, totals recalculate, item remains when quantity > 0",
+    "Grounded_In": [
+      "product_specs.md#cart_item_management",
+      "ui_ux_guide.txt#cart_interaction_design"
+    ],
+    "Risk": "Medium",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-020",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains at least one item"
+    ],
+    "Test_Scenario": "Remove item from cart",
+    "Steps": [
+      "Click 'Remove' button for an item",
+      "Verify item is removed from cart",
+      "Check that total recalculates",
+      "Verify empty cart message if no items remain"
+    ],
+    "Expected_Result": "Item removed successfully, totals update, empty cart message shown if applicable",
+    "Grounded_In": [
+      "product_specs.md#cart_item_management",
+      "ui_ux_guide.txt#cart_interaction_design"
+    ],
+    "Risk": "High",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-021",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded"
+    ],
+    "Test_Scenario": "Verify empty cart state",
+    "Steps": [
+      "Load page with empty cart",
+      "Verify 'Your cart is empty' message is displayed",
+      "Check that Pay Now button is disabled",
+      "Verify total shows $0.00"
+    ],
+    "Expected_Result": "Empty cart message displayed, Pay Now disabled, total is $0.00",
+    "Grounded_In": [
+      "product_specs.md#cart_item_management",
+      "ui_ux_guide.txt#cart_interaction_design"
+    ],
+    "Risk": "Low",
+    "Priority": "P2"
+  },
+  {
+    "Test_ID": "TC-022",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Product dropdown available"
+    ],
+    "Test_Scenario": "Attempt to add item without selecting product",
+    "Steps": [
+      "Leave product dropdown on 'Choose a product...'",
+      "Set quantity to 1",
+      "Click 'Add to Cart' button",
+      "Verify validation prevents addition"
+    ],
+    "Expected_Result": "Alert or error message prevents adding item without product selection",
+    "Grounded_In": [
+      "product_specs.md#add_to_cart_functionality"
+    ],
+    "Risk": "Low",
+    "Priority": "P3"
+  },
+  {
+    "Test_ID": "TC-023",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded"
+    ],
+    "Test_Scenario": "Test quantity boundary values",
+    "Steps": [
+      "Select any product",
+      "Attempt to set quantity to 0",
+      "Attempt to set quantity to 11 (above max)",
+      "Verify validation constraints",
+      "Test with quantity exactly at limits (1 and 10)"
+    ],
+    "Expected_Result": "Quantity constrained to valid range 1-10, validation prevents invalid values",
+    "Grounded_In": [
+      "product_specs.md#add_to_cart_functionality"
+    ],
+    "Risk": "Medium",
+    "Priority": "P2"
+  },
+  {
+    "Test_ID": "TC-024",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains items"
+    ],
+    "Test_Scenario": "Test direct quantity input field",
+    "Steps": [
+      "Add item to cart",
+      "Click on quantity input field",
+      "Enter new quantity value directly",
+      "Tab away or press Enter",
+      "Verify quantity updates and total recalculates"
+    ],
+    "Expected_Result": "Direct quantity input works correctly, totals update in real-time",
+    "Grounded_In": [
+      "product_specs.md#cart_item_management",
+      "ui_ux_guide.txt#cart_interaction_design"
+    ],
+    "Risk": "Medium",
+    "Priority": "P2"
+  },
+  {
+    "Test_ID": "TC-025",
+    "Feature": "Validation",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart is empty"
+    ],
+    "Test_Scenario": "Pay Now button disabled with empty cart",
+    "Steps": [
+      "Ensure cart is empty",
+      "Fill all required form fields with valid data",
+      "Select payment method",
+      "Verify Pay Now button remains disabled"
+    ],
+    "Expected_Result": "Pay Now button disabled when cart is empty, even with valid form",
+    "Grounded_In": [
+      "product_specs.md#order_processing",
+      "ui_ux_guide.txt#interactive_elements"
+    ],
+    "Risk": "High",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-026",
+    "Feature": "Payment",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains items",
+      "All form fields valid"
+    ],
+    "Test_Scenario": "Complete payment process with success message",
+    "Steps": [
+      "Add item to cart",
+      "Complete all required form fields",
+      "Select payment method (Credit Card or PayPal)",
+      "Click Pay Now button",
+      "Verify 'Payment Successful!' message appears",
+      "Check that entire form is replaced with success page"
+    ],
+    "Expected_Result": "Payment processed successfully, 'Payment Successful!' message displayed, form replaced with success content",
+    "Grounded_In": [
+      "product_specs.md#order_processing",
+      "ui_ux_guide.txt#success_page_specifications"
+    ],
+    "Risk": "High",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-027",
+    "Feature": "Discount Code",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains items",
+      "Express shipping selected"
+    ],
+    "Test_Scenario": "Apply discount with Express shipping",
+    "Steps": [
+      "Add item to cart (e.g., $100 item)",
+      "Select Express shipping (+$10)",
+      "Apply SAVE15 discount code",
+      "Verify calculation: (Subtotal × 0.85) + $10",
+      "Check that discount is applied before shipping cost"
+    ],
+    "Expected_Result": "Discount applied to subtotal only, shipping cost added after discount calculation",
+    "Grounded_In": [
+      "product_specs.md#price_calculations",
+      "product_specs.md#discount_application_rules"
+    ],
+    "Risk": "High",
+    "Priority": "P1"
+  },
+  {
+    "Test_ID": "TC-028",
+    "Feature": "Cart",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Same item already in cart"
+    ],
+    "Test_Scenario": "Add existing item to increase quantity",
+    "Steps": [
+      "Add Laptop (qty 1) to cart",
+      "Select Laptop again from dropdown",
+      "Set quantity to 2",
+      "Click Add to Cart",
+      "Verify existing item quantity increases (1+2=3)",
+      "Check that new cart item is not created"
+    ],
+    "Expected_Result": "Existing item quantity increases rather than creating duplicate cart entry",
+    "Grounded_In": [
+      "product_specs.md#add_to_cart_functionality"
+    ],
+    "Risk": "Medium",
+    "Priority": "P2"
+  },
+  {
+    "Test_ID": "TC-029",
+    "Feature": "Validation",
+    "Preconditions": [
+      "Checkout page is loaded"
+    ],
+    "Test_Scenario": "Email format validation with various invalid formats",
+    "Steps": [
+      "Test email validation with: 'test', 'test@', 'test@domain', '@domain.com', 'test.domain.com'",
+      "For each invalid format, verify red error message appears",
+      "Test valid format: 'test@domain.com'",
+      "Verify error disappears with valid format"
+    ],
+    "Expected_Result": "All invalid email formats trigger red error message, valid format clears error",
+    "Grounded_In": [
+      "product_specs.md#form_validation",
+      "ui_ux_guide.txt#error_handling_specifications"
+    ],
+    "Risk": "Medium",
+    "Priority": "P2"
+  },
+  {
+    "Test_ID": "TC-030",
+    "Feature": "Discount Code",
+    "Preconditions": [
+      "Checkout page is loaded",
+      "Cart contains items",
+      "SAVE15 already applied"
+    ],
+    "Test_Scenario": "Attempt to apply second discount code",
+    "Steps": [
+      "Apply SAVE15 discount code successfully",
+      "Enter WELCOME10 discount code",
+      "Click Apply button",
+      "Verify that WELCOME10 replaces SAVE15",
+      "Check that only one discount is applied at a time"
+    ],
+    "Expected_Result": "Second discount code replaces first one, only one discount active at a time",
+    "Grounded_In": [
+      "product_specs.md#discount_application_rules"
+    ],
+    "Risk": "Medium",
+    "Priority": "P2"
+  }
+]
