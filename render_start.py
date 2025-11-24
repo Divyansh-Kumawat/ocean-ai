@@ -142,7 +142,7 @@ def generate_initial_test_cases():
     try:
         print("📝 Generating initial test cases...")
         
-        # Run test case generator with timeout
+        # Try main test generator first
         result = subprocess.run(['python', 'test_case_generator.py'], 
                               capture_output=True, text=True, timeout=60)
         
@@ -150,8 +150,18 @@ def generate_initial_test_cases():
             print("✅ Test cases generated successfully")
             return True
         else:
-            print(f"⚠️ Test case generation completed with warnings: {result.stderr}")
-            return True  # Continue anyway
+            print(f"⚠️ Main test generator had issues, trying lightweight version...")
+            
+            # Fallback to lightweight generator
+            result = subprocess.run(['python', 'lightweight_test_generator.py'], 
+                                  capture_output=True, text=True, timeout=30)
+            
+            if result.returncode == 0:
+                print("✅ Lightweight test cases generated successfully")
+                return True
+            else:
+                print(f"⚠️ Both generators completed with warnings: {result.stderr}")
+                return True  # Continue anyway
             
     except subprocess.TimeoutExpired:
         print("⏱️ Test case generation timed out - will retry later")

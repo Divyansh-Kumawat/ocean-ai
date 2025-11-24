@@ -5,9 +5,9 @@ services:
     plan: free
     buildCommand: |
       pip install --upgrade pip
-      pip install -r requirements.txt
+      pip install --only-binary=all -r requirements.txt
       pip install webdriver-manager gunicorn
-      python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()"
+      python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()" || echo "ChromeDriver will be installed at runtime"
     startCommand: python render_start.py
     envVars:
       - key: PORT
@@ -27,7 +27,7 @@ services:
     plan: free
     buildCommand: |
       pip install --upgrade pip
-      pip install -r requirements.txt
+      pip install --only-binary=all -r requirements.txt
       pip install webdriver-manager
     startCommand: python test_runner_service.py
     envVars:

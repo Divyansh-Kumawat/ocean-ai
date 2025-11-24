@@ -67,6 +67,7 @@ class TestRunner:
         try:
             print("📝 Generating test cases...")
             
+            # Try main test generator first
             result = subprocess.run(['python', 'test_case_generator.py'], 
                                   capture_output=True, text=True, timeout=120)
             
@@ -74,7 +75,17 @@ class TestRunner:
                 print("✅ Test cases generated")
                 return {"status": "success", "output": result.stdout}
             else:
-                return {"status": "warning", "output": result.stderr}
+                print("⚠️ Main generator failed, trying lightweight version...")
+                
+                # Fallback to lightweight generator
+                result = subprocess.run(['python', 'lightweight_test_generator.py'], 
+                                      capture_output=True, text=True, timeout=60)
+                
+                if result.returncode == 0:
+                    print("✅ Lightweight test cases generated")
+                    return {"status": "success", "output": result.stdout}
+                else:
+                    return {"status": "warning", "output": result.stderr}
                 
         except subprocess.TimeoutExpired:
             return {"status": "timeout", "output": "Test generation timed out"}

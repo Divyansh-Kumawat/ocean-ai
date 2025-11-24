@@ -1,0 +1,23 @@
+# Minimal requirements for basic deployment without ML dependencies
+# Use this if the main requirements.txt fails due to compilation issues
+
+# Core Selenium dependencies
+selenium==4.15.0
+webdriver-manager==4.0.1
+
+# Testing framework
+pytest==7.4.3
+pytest-html==4.1.1
+
+# Web server and deployment
+requests==2.31.0
+schedule==1.2.0
+gunicorn==21.2.0
+beautifulsoup4==4.12.2
+python-dotenv==1.0.0
+
+# Basic text processing (no compilation required)
+# These replace scikit-learn for basic text similarity
+difflib  # Built-in Python module
+re       # Built-in Python module
+json     # Built-in Python module
