@@ -1,13 +1,9 @@
 services:
   - type: web
     name: ocean-ai-qa-framework
-    runtime: python
+    runtime: docker
     plan: free
-    buildCommand: |
-      pip install --upgrade pip
-      pip install --only-binary=all -r requirements.txt
-      pip install webdriver-manager gunicorn
-      python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()" || echo "ChromeDriver will be installed at runtime"
+    dockerfilePath: Dockerfile
     startCommand: python render_start.py
     envVars:
       - key: PORT
@@ -16,19 +12,14 @@ services:
         value: "--headless --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-features=VizDisplayCompositor --single-process"
       - key: PYTHONPATH
         value: "."
-      - key: DISPLAY
-        value: ":99"
     healthCheckPath: /health
-    
-  # Optional: Background service for running tests
+
+  # Optional: Background service for running tests (uses the same Docker image)
   - type: background
     name: ocean-ai-test-runner
-    runtime: python
+    runtime: docker
     plan: free
-    buildCommand: |
-      pip install --upgrade pip
-      pip install --only-binary=all -r requirements.txt
-      pip install webdriver-manager
+    dockerfilePath: Dockerfile
     startCommand: python test_runner_service.py
     envVars:
       - key: CHROME_OPTIONS
