@@ -1,0 +1,37 @@
+# Streamlit App Requirements
+# Core Streamlit application
+streamlit>=1.28.0
+
+# Document processing and parsing
+beautifulsoup4>=4.12.0
+pymupdf>=1.23.0  # fitz for PDF processing
+unstructured>=0.10.0  # Advanced document parsing
+python-multipart>=0.0.6  # For file uploads
+
+# Vector database and embeddings
+chromadb>=0.4.15
+sentence-transformers>=2.2.0
+
+# ML and NLP dependencies
+numpy>=1.21.0,<2.0.0
+scikit-learn>=1.1.0,<1.4.0
+
+# Web scraping and requests
+requests>=2.31.0
+
+# Data handling
+pandas>=1.5.0
+
+# Additional utilities
+python-dotenv>=1.0.0
+pathlib  # Built-in Python module
+tempfile  # Built-in Python module
+json  # Built-in Python module
+
+# Selenium dependencies (for script generation)
+selenium>=4.15.0
+webdriver-manager>=4.0.1
+
+# Testing framework (optional)
+pytest>=7.4.3
+pytest-html>=4.1.1

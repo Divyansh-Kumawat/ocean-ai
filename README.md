@@ -118,6 +118,22 @@ pip install -r requirements.txt
 pip install webdriver-manager
 ```
 
+### 🌊 Run Streamlit QA Agent (NEW!)
+```bash
+# Install Streamlit dependencies
+pip install -r requirements-streamlit.txt
+
+# Launch the autonomous QA agent interface
+streamlit run streamlit_app.py
+
+# Open your browser to: http://localhost:8501
+```
+
+**Streamlit App Features:**
+- **Phase 1**: Upload documents and build knowledge base
+- **Phase 2**: Generate test cases using AI agent
+- **Phase 3**: Create Selenium scripts automatically
+
 ### Generate Test Cases
 ```bash
 # Run RAG system to generate test cases
