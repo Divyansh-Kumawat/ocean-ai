@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: ocean-ai-qa-framework
+    runtime: python
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install webdriver-manager gunicorn
+      python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()"
+    startCommand: python render_start.py
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: CHROME_OPTIONS
+        value: "--headless --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-features=VizDisplayCompositor --single-process"
+      - key: PYTHONPATH
+        value: "."
+      - key: DISPLAY
+        value: ":99"
+    healthCheckPath: /health
+    
+  # Optional: Background service for running tests
+  - type: background
+    name: ocean-ai-test-runner
+    runtime: python
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install webdriver-manager
+    startCommand: python test_runner_service.py
+    envVars:
+      - key: CHROME_OPTIONS
+        value: "--headless --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-features=VizDisplayCompositor --single-process"
+      - key: PYTHONPATH
+        value: "."
+      - key: WEB_SERVICE_URL
+        value: https://ocean-ai-qa-framework.onrender.com
