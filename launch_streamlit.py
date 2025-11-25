@@ -40,6 +40,35 @@ def check_streamlit():
         print("❌ Streamlit not installed")
         return False
 
+def check_environment():
+    """Check environment configuration"""
+    print("🔧 Checking environment configuration...")
+    
+    # Check if .env file exists
+    env_file = Path(".env")
+    if not env_file.exists():
+        print("⚠️ .env file not found!")
+        print("📝 Please create .env file and add your Gemini API key")
+        print("Get your free API key from: https://aistudio.google.com/app/apikey")
+        return True
+    
+    # Check if Gemini API key is configured
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        
+        api_key = os.getenv('GEMINI_API_KEY')
+        if not api_key or api_key == 'your_gemini_api_key_here':
+            print("⚠️ Gemini API key not configured in .env file")
+            print("You can still use the app with basic features")
+            print("Get your free API key from: https://aistudio.google.com/app/apikey")
+        else:
+            print("✅ Gemini API key found and configured")
+    except ImportError:
+        print("📦 python-dotenv not found in dependencies")
+    
+    return True
+
 def launch_streamlit():
     """Launch the Streamlit application"""
     try:
@@ -86,6 +115,9 @@ def main():
         # Verify installation
         if not check_streamlit():
             return
+    
+    # Check environment configuration
+    check_environment()
     
     # Launch application
     launch_streamlit()

@@ -7,10 +7,28 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 import pandas as pd
 
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+# Import Google Gemini AI
+try:
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
+    # Configure Gemini API
+    api_key = os.getenv('GEMINI_API_KEY')
+    if api_key and api_key != 'your_gemini_api_key_here':
+        genai.configure(api_key=api_key)
+        GEMINI_CONFIGURED = True
+    else:
+        GEMINI_CONFIGURED = False
+except ImportError:
+    GEMINI_AVAILABLE = False
+    GEMINI_CONFIGURED = False
+
 # Import required libraries for document processing and vector DB
 try:
     import chromadb
-    from chromadb.config import Settings
     CHROMA_AVAILABLE = True
 except ImportError:
     CHROMA_AVAILABLE = False
@@ -193,16 +211,25 @@ class VectorDatabase:
         if not CHROMA_AVAILABLE:
             raise ValueError("ChromaDB not available")
         
-        self.client = chromadb.Client(Settings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory="./chroma_db"
-        ))
+        # Use the new ChromaDB client initialization
+        try:
+            # First, try to create a persistent client with the new API
+            self.client = chromadb.PersistentClient(path="./chroma_db")
+        except Exception as e:
+            st.warning(f"Could not create persistent client: {e}")
+            # Fallback to in-memory client
+            self.client = chromadb.Client()
+            
         self.collection_name = collection_name
         self.collection = None
         self.embedding_model = None
         
         if SENTENCE_TRANSFORMERS_AVAILABLE:
-            self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+            try:
+                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+            except Exception as e:
+                st.warning(f"Could not load embedding model: {e}")
+                self.embedding_model = None
     
     def initialize_collection(self):
         """Initialize or get collection"""
@@ -282,21 +309,30 @@ class TestCaseGenerator:
     
     def check_llm_availability(self):
         """Check if any LLM service is available"""
-        # For now, we'll use a simple rule-based approach
-        # In production, you would integrate with Ollama, Groq, or HuggingFace
-        self.llm_available = True
+        if GEMINI_AVAILABLE and GEMINI_CONFIGURED:
+            self.llm_available = True
+            self.llm_service = 'gemini'
+        else:
+            # Fallback to rule-based approach
+            self.llm_available = True
+            self.llm_service = 'rule-based'
     
     def generate_test_cases(self, user_query: str) -> List[Dict[str, Any]]:
         """Generate test cases based on user query"""
         # Retrieve relevant context
-        context_results = self.vector_db.search(user_query, n_results=5)
+        context_results = self.vector_db.search(user_query, n_results=5) if self.vector_db else []
         
         if not context_results:
             st.warning("No relevant context found in knowledge base")
+            if self.llm_service == 'gemini' and GEMINI_CONFIGURED:
+                return self._generate_gemini_test_cases(user_query, [])
             return self._generate_fallback_test_cases(user_query)
         
-        # For demo purposes, generate structured test cases based on query analysis
-        return self._generate_structured_test_cases(user_query, context_results)
+        # Use Gemini AI if available and configured, otherwise fallback to structured approach
+        if self.llm_service == 'gemini' and GEMINI_CONFIGURED:
+            return self._generate_gemini_test_cases(user_query, context_results)
+        else:
+            return self._generate_structured_test_cases(user_query, context_results)
     
     def _generate_structured_test_cases(self, query: str, context: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Generate structured test cases based on context"""
@@ -444,6 +480,65 @@ class TestCaseGenerator:
         test_cases.extend(self._generate_validation_test_cases(context))
         test_cases.extend(self._generate_shipping_test_cases(context))
         return test_cases
+    
+    def _generate_gemini_test_cases(self, query: str, context_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Generate test cases using Gemini AI"""
+        try:
+            # Prepare context from search results
+            context_text = ""
+            if context_results:
+                context_text = "\n\n".join([f"Source: {result.get('metadata', {}).get('source', 'Unknown')}\nContent: {result.get('text', '')}" for result in context_results])
+            
+            # Create the prompt for Gemini
+            prompt = f"""
+You are an expert QA engineer generating comprehensive test cases for an e-commerce checkout system.
+
+User Query: {query}
+
+{"Context from knowledge base:" + context_text if context_text else "No specific context available - generate general e-commerce checkout test cases."}
+
+Generate 3-5 comprehensive test cases in JSON format. Each test case should have:
+- Test_ID: Unique identifier (format: TC-XXX-001)
+- Feature: The feature being tested
+- Test_Scenario: Detailed scenario description
+- Test_Type: (Functional, Negative, Boundary, Integration)
+- Steps: Array of detailed test steps
+- Expected_Result: Clear expected outcome
+- Priority: (High, Medium, Low)
+- Risk: (High, Medium, Low)
+- Grounded_In: Array of sources/reasoning
+
+Focus on realistic, actionable test cases for an e-commerce checkout flow including cart management, discount codes, shipping options, payment processing, and form validation.
+
+Return only valid JSON array format.
+"""
+            
+            # Initialize Gemini model
+            model = genai.GenerativeModel('gemini-pro')
+            
+            # Generate response
+            response = model.generate_content(prompt)
+            
+            # Parse the response
+            response_text = response.text.strip()
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]  # Remove ```json
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]  # Remove ```
+            
+            # Parse JSON
+            test_cases = json.loads(response_text)
+            
+            # Validate and ensure it's a list
+            if not isinstance(test_cases, list):
+                test_cases = [test_cases]  # Wrap single item in list
+            
+            return test_cases
+            
+        except Exception as e:
+            st.error(f"Error generating test cases with Gemini: {str(e)}")
+            # Fallback to structured approach
+            return self._generate_structured_test_cases(query, context_results)
     
     def _generate_fallback_test_cases(self, query: str) -> List[Dict[str, Any]]:
         """Generate basic test cases when no context is available"""
@@ -673,7 +768,12 @@ def main():
     # Initialize session state
     if 'vector_db' not in st.session_state:
         if CHROMA_AVAILABLE:
-            st.session_state.vector_db = VectorDatabase()
+            try:
+                st.session_state.vector_db = VectorDatabase()
+            except Exception as e:
+                st.error(f"❌ Failed to initialize ChromaDB: {str(e)}")
+                st.warning("🔄 The app will continue with limited functionality. Document search features will be disabled.")
+                st.session_state.vector_db = None
         else:
             st.session_state.vector_db = None
     
@@ -689,6 +789,28 @@ def main():
     # Header
     st.title("🌊 Ocean AI - Autonomous QA Agent")
     st.markdown("### Intelligent Test Case Generation & Selenium Script Creation")
+    
+    # API Key Configuration
+    if not GEMINI_CONFIGURED:
+        st.warning("⚠️ Gemini AI not configured! Please set up your API key.")
+        with st.expander("🔑 Configure Gemini API Key", expanded=True):
+            st.markdown("""
+            **To enable AI-powered test case generation:**
+            1. Get your free API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+            2. Add it to your `.env` file: `GEMINI_API_KEY=your_api_key_here`
+            3. Restart the Streamlit app
+            
+            **Or enter it temporarily below (not recommended for production):**
+            """)
+            
+            temp_key = st.text_input("Gemini API Key", type="password", help="This will only be active for this session")
+            if st.button("Apply API Key") and temp_key:
+                genai.configure(api_key=temp_key)
+                st.session_state.gemini_configured = True
+                st.success("✅ Gemini API key applied! Please refresh to use AI features.")
+                st.rerun()
+    else:
+        st.success("✅ Gemini AI is configured and ready!")
     
     # Sidebar for navigation
     st.sidebar.title("Navigation")

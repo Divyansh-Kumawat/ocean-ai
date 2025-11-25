@@ -1,0 +1,402 @@
+{
+  "test_scenarios": [
+    {
+      "category": "Positive Testing",
+      "scenarios": [
+        {
+          "id": "POS-001",
+          "title": "Successful Product Purchase Flow",
+          "description": "Complete end-to-end purchase with valid information",
+          "steps": [
+            "Navigate to product page",
+            "Add product to cart with quantity 1",
+            "Proceed to checkout",
+            "Enter valid email: test@example.com",
+            "Fill shipping address with valid US address",
+            "Select Standard Shipping ($5.99)",
+            "Enter valid credit card information",
+            "Apply valid discount code SAVE15",
+            "Review order and complete purchase"
+          ],
+          "expected_result": "Order confirmation page displayed with order number",
+          "test_data": {
+            "email": "test@example.com",
+            "shipping_address": {
+              "first_name": "John",
+              "last_name": "Doe",
+              "street": "123 Main Street",
+              "city": "New York",
+              "state": "NY",
+              "zip": "10001",
+              "phone": "(555) 123-4567"
+            },
+            "payment": {
+              "card_number": "4111111111111111",
+              "expiry": "12/25",
+              "cvv": "123",
+              "name": "John Doe"
+            },
+            "discount_code": "SAVE15"
+          }
+        },
+        {
+          "id": "POS-002",
+          "title": "Guest Checkout with PayPal",
+          "description": "Complete purchase using PayPal without account creation",
+          "steps": [
+            "Add item to cart",
+            "Select guest checkout option",
+            "Enter email address",
+            "Fill shipping information",
+            "Select Express Shipping",
+            "Choose PayPal payment method",
+            "Complete PayPal authentication",
+            "Confirm order"
+          ],
+          "expected_result": "PayPal payment processed and order confirmed"
+        }
+      ]
+    },
+    {
+      "category": "Negative Testing",
+      "scenarios": [
+        {
+          "id": "NEG-001",
+          "title": "Invalid Email Format",
+          "description": "Test form validation with invalid email addresses",
+          "test_data": [
+            "invalid-email",
+            "test@",
+            "@domain.com",
+            "test.domain.com",
+            "test space@domain.com"
+          ],
+          "expected_result": "Error message: 'Please enter a valid email address'"
+        },
+        {
+          "id": "NEG-002",
+          "title": "Expired Discount Code",
+          "description": "Apply expired or invalid discount codes",
+          "test_data": {
+            "invalid_codes": [
+              "EXPIRED10",
+              "INVALIDCODE",
+              "USED2023",
+              "12345",
+              ""
+            ]
+          },
+          "expected_result": "Error messages for each invalid code type"
+        },
+        {
+          "id": "NEG-003",
+          "title": "Invalid Credit Card Information",
+          "description": "Test payment form with invalid card details",
+          "test_cases": [
+            {
+              "card_number": "1234567890123456",
+              "error": "Invalid card number"
+            },
+            {
+              "expiry": "01/20",
+              "error": "Card has expired"
+            },
+            {
+              "cvv": "12",
+              "error": "Invalid security code"
+            },
+            {
+              "name": "",
+              "error": "Cardholder name is required"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Boundary Testing",
+      "scenarios": [
+        {
+          "id": "BND-001",
+          "title": "Quantity Limits",
+          "description": "Test cart quantity boundaries",
+          "test_cases": [
+            {
+              "quantity": 0,
+              "expected": "Remove item from cart or show error"
+            },
+            {
+              "quantity": 1,
+              "expected": "Valid minimum quantity"
+            },
+            {
+              "quantity": 99,
+              "expected": "Valid maximum quantity"
+            },
+            {
+              "quantity": 100,
+              "expected": "Error: Maximum 99 items allowed"
+            }
+          ]
+        },
+        {
+          "id": "BND-002",
+          "title": "Free Shipping Threshold",
+          "description": "Test free shipping eligibility",
+          "test_cases": [
+            {
+              "cart_total": 74.99,
+              "expected": "Standard shipping charges apply"
+            },
+            {
+              "cart_total": 75.00,
+              "expected": "Free shipping option available"
+            },
+            {
+              "cart_total": 75.01,
+              "expected": "Free shipping option available"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Integration Testing",
+      "scenarios": [
+        {
+          "id": "INT-001",
+          "title": "Payment Gateway Integration",
+          "description": "Test integration with payment processors",
+          "test_cases": [
+            "Visa card processing",
+            "MasterCard processing",
+            "American Express processing",
+            "PayPal integration",
+            "Apple Pay integration",
+            "Google Pay integration"
+          ]
+        },
+        {
+          "id": "INT-002",
+          "title": "Shipping Calculator Integration",
+          "description": "Test real-time shipping cost calculation",
+          "test_data": {
+            "addresses": [
+              {
+                "type": "domestic",
+                "zip": "10001",
+                "expected_shipping": [5.99, 12.99, 24.99]
+              },
+              {
+                "type": "international",
+                "country": "CA",
+                "expected_shipping": [9.99, 19.99, 39.99]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "category": "Performance Testing",
+      "scenarios": [
+        {
+          "id": "PER-001",
+          "title": "Page Load Performance",
+          "description": "Measure checkout page load times",
+          "metrics": {
+            "initial_load": "< 3 seconds",
+            "form_interactions": "< 500ms",
+            "payment_processing": "< 10 seconds"
+          }
+        },
+        {
+          "id": "PER-002",
+          "title": "Cart Update Performance",
+          "description": "Test real-time cart updates",
+          "scenarios": [
+            "Add item to cart",
+            "Update item quantity",
+            "Apply discount code",
+            "Remove item from cart",
+            "Recalculate totals"
+          ],
+          "expected_response_time": "< 1 second"
+        }
+      ]
+    },
+    {
+      "category": "Security Testing",
+      "scenarios": [
+        {
+          "id": "SEC-001",
+          "title": "Payment Data Security",
+          "description": "Verify secure handling of payment information",
+          "checks": [
+            "Credit card numbers are not stored in plain text",
+            "CVV codes are not logged or stored",
+            "Payment forms use HTTPS encryption",
+            "PCI DSS compliance verification"
+          ]
+        },
+        {
+          "id": "SEC-002",
+          "title": "Input Validation Security",
+          "description": "Test for injection vulnerabilities",
+          "test_inputs": [
+            "<script>alert('xss')</script>",
+            "'; DROP TABLE orders; --",
+            "../../../etc/passwd",
+            "javascript:alert('test')"
+          ],
+          "expected_result": "All malicious inputs properly sanitized"
+        }
+      ]
+    },
+    {
+      "category": "Mobile Testing",
+      "scenarios": [
+        {
+          "id": "MOB-001",
+          "title": "Mobile Checkout Flow",
+          "description": "Complete checkout on mobile devices",
+          "devices": [
+            "iPhone 14 Pro (iOS Safari)",
+            "Samsung Galaxy S23 (Chrome Mobile)",
+            "iPad Pro (iOS Safari)",
+            "Google Pixel 7 (Chrome Mobile)"
+          ],
+          "test_scenarios": [
+            "Touch interactions work correctly",
+            "Form fields are properly sized",
+            "Keyboard appears for input fields",
+            "Scroll behavior is smooth",
+            "Payment methods work on mobile"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Accessibility Testing",
+      "scenarios": [
+        {
+          "id": "ACC-001",
+          "title": "Screen Reader Compatibility",
+          "description": "Test checkout with assistive technologies",
+          "tools": [
+            "NVDA (Windows)",
+            "JAWS (Windows)",
+            "VoiceOver (macOS/iOS)",
+            "TalkBack (Android)"
+          ],
+          "test_areas": [
+            "Form label associations",
+            "Error message announcements",
+            "Navigation via keyboard",
+            "Focus management",
+            "Progress indicator accessibility"
+          ]
+        },
+        {
+          "id": "ACC-002",
+          "title": "Keyboard Navigation",
+          "description": "Complete checkout using only keyboard",
+          "test_steps": [
+            "Navigate through all form fields using Tab",
+            "Select shipping options with keyboard",
+            "Choose payment methods without mouse",
+            "Complete form submission via Enter key"
+          ]
+        }
+      ]
+    }
+  ],
+  "test_data_sets": {
+    "valid_addresses": [
+      {
+        "type": "US_Standard",
+        "first_name": "John",
+        "last_name": "Smith",
+        "street": "123 Oak Street",
+        "city": "Chicago",
+        "state": "IL",
+        "zip": "60601",
+        "phone": "(312) 555-0123"
+      },
+      {
+        "type": "US_Apartment", 
+        "first_name": "Mary",
+        "last_name": "Johnson",
+        "street": "456 Pine Avenue",
+        "apartment": "Apt 2B",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zip": "90210",
+        "phone": "(213) 555-0456"
+      }
+    ],
+    "invalid_addresses": [
+      {
+        "type": "Missing_Required_Fields",
+        "first_name": "",
+        "last_name": "Test",
+        "street": "",
+        "city": "Test City",
+        "state": "",
+        "zip": "12345"
+      },
+      {
+        "type": "Invalid_ZIP",
+        "first_name": "Test",
+        "last_name": "User",
+        "street": "123 Test St",
+        "city": "Test City",
+        "state": "NY",
+        "zip": "0000"
+      }
+    ],
+    "discount_codes": {
+      "valid": [
+        {
+          "code": "SAVE15",
+          "type": "percentage",
+          "value": 15,
+          "minimum_order": 50,
+          "maximum_uses": null,
+          "expiry_date": "2025-12-31"
+        },
+        {
+          "code": "FREESHIP",
+          "type": "free_shipping",
+          "value": 0,
+          "minimum_order": 75,
+          "maximum_uses": null,
+          "expiry_date": "2025-12-31"
+        }
+      ],
+      "invalid": [
+        {
+          "code": "EXPIRED",
+          "error_message": "This discount code has expired"
+        },
+        {
+          "code": "INVALID123",
+          "error_message": "Invalid discount code"
+        }
+      ]
+    }
+  },
+  "performance_benchmarks": {
+    "page_load_times": {
+      "checkout_page": "< 3000ms",
+      "payment_processing": "< 10000ms",
+      "order_confirmation": "< 2000ms"
+    },
+    "interaction_response_times": {
+      "form_field_focus": "< 100ms",
+      "button_click_response": "< 200ms",
+      "cart_update": "< 1000ms",
+      "discount_code_validation": "< 2000ms"
+    }
+  }
+}
