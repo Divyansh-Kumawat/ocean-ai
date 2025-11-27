@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopMaster Pro - Checkout</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f9fafb; 
+            color: #374151;
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .checkout-header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #f3f4f6;
+            margin: 0 5px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .progress-step.active {
+            background: #2563eb;
+            color: white;
+        }
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        .checkout-form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .order-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .error {
+            border-color: #dc2626;
+        }
+        .error-message {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: white;
+            color: #2563eb;
+            border: 1px solid #2563eb;
+        }
+        .btn-secondary:hover {
+            background-color: #eff6ff;
+        }
+        .btn-full {
+            width: 100%;
+        }
+        .discount-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .discount-input {
+            display: flex;
+            gap: 10px;
+        }
+        .discount-input input {
+            flex: 1;
+        }
+        .shipping-options {
+            margin: 20px 0;
+        }
+        .shipping-option {
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .shipping-option:hover {
+            border-color: #2563eb;
+            background-color: #f8fafc;
+        }
+        .shipping-option.selected {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .payment-method {
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .payment-method:hover {
+            border-color: #2563eb;
+        }
+        .payment-method.selected {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+        .order-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .item-image {
+            width: 60px;
+            height: 60px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            margin-right: 15px;
+        }
+        .item-details {
+            flex: 1;
+        }
+        .item-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .item-price {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .quantity-input {
+            width: 50px;
+            text-align: center;
+            padding: 5px;
+        }
+        .order-totals {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .total-row.grand-total {
+            font-size: 18px;
+            font-weight: 600;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+        .badge {
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .checkout-content {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="checkout-header">
+            <h1>ShopMaster Pro Checkout</h1>
+            <div class="progress-bar">
+                <div class="progress-step">Cart Review</div>
+                <div class="progress-step">Information</div>
+                <div class="progress-step active">Shipping</div>
+                <div class="progress-step">Payment</div>
+                <div class="progress-step">Review</div>
+            </div>
+        </div>
+
+        <div class="checkout-content">
+            <!-- Main Checkout Form -->
+            <div class="checkout-form">
+                <!-- Customer Information Section -->
+                <div class="form-section">
+                    <h2>Contact Information</h2>
+                    <div class="form-group">
+                        <label for="email" class="required">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                        <div class="error-message">Please enter a valid email address</div>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="newsletter"> 
+                            Keep me updated on news and exclusive offers
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Shipping Address Section -->
+                <div class="form-section">
+                    <h2>Shipping Address</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName" class="required">First Name</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                            <div class="error-message">First name is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName" class="required">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                            <div class="error-message">Last name is required</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="company">Company (Optional)</label>
+                        <input type="text" id="company" name="company">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="address" class="required">Street Address</label>
+                        <input type="text" id="address" name="address" placeholder="123 Main Street" required>
+                        <div class="error-message">Street address is required</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="apartment">Apartment, suite, etc. (Optional)</label>
+                        <input type="text" id="apartment" name="apartment" placeholder="Apartment 4B">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city" class="required">City</label>
+                            <input type="text" id="city" name="city" required>
+                            <div class="error-message">City is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="state" class="required">State/Province</label>
+                            <select id="state" name="state" required>
+                                <option value="">Select State</option>
+                                <option value="NY">New York</option>
+                                <option value="CA">California</option>
+                                <option value="TX">Texas</option>
+                                <option value="FL">Florida</option>
+                            </select>
+                            <div class="error-message">Please select a state</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="zipCode" class="required">ZIP/Postal Code</label>
+                            <input type="text" id="zipCode" name="zipCode" pattern="[0-9]{5}" required>
+                            <div class="error-message">Please enter a valid ZIP code</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="country" class="required">Country</label>
+                            <select id="country" name="country" required>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone" class="required">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" required>
+                        <div class="error-message">Please enter a valid phone number</div>
+                    </div>
+                </div>
+
+                <!-- Shipping Method Section -->
+                <div class="form-section">
+                    <h2>Shipping Method</h2>
+                    <div class="shipping-options">
+                        <div class="shipping-option selected" data-method="standard">
+                            <strong>Standard Shipping - $5.99</strong><br>
+                            <small>5-7 business days</small>
+                        </div>
+                        <div class="shipping-option" data-method="express">
+                            <strong>Express Shipping - $12.99</strong><br>
+                            <small>2-3 business days</small>
+                        </div>
+                        <div class="shipping-option" data-method="overnight">
+                            <strong>Overnight Delivery - $24.99</strong><br>
+                            <small>Next business day</small>
+                        </div>
+                        <div class="shipping-option" data-method="free">
+                            <strong>Free Shipping - $0.00</strong><br>
+                            <small>7-10 business days (Orders over $75)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="form-section">
+                    <h2>Payment Method</h2>
+                    
+                    <div class="payment-methods">
+                        <div class="payment-method selected" data-method="card">
+                            💳 Credit Card
+                        </div>
+                        <div class="payment-method" data-method="paypal">
+                            🟦 PayPal
+                        </div>
+                        <div class="payment-method" data-method="applepay">
+                            🍎 Apple Pay
+                        </div>
+                        <div class="payment-method" data-method="googlepay">
+                            🟢 Google Pay
+                        </div>
+                    </div>
+
+                    <div id="card-payment" class="payment-form">
+                        <div class="form-group">
+                            <label for="cardNumber" class="required">Card Number</label>
+                            <input type="text" id="cardNumber" name="cardNumber" 
+                                   placeholder="1234 5678 9012 3456" 
+                                   pattern="[0-9\s]{13,19}" 
+                                   maxlength="19" required>
+                            <div class="error-message">Please enter a valid card number</div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expiryDate" class="required">Expiry Date</label>
+                                <input type="text" id="expiryDate" name="expiryDate" 
+                                       placeholder="MM/YY" pattern="[0-9]{2}/[0-9]{2}" 
+                                       maxlength="5" required>
+                                <div class="error-message">Please enter a valid expiry date</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv" class="required">Security Code</label>
+                                <input type="text" id="cvv" name="cvv" 
+                                       placeholder="123" pattern="[0-9]{3,4}" 
+                                       maxlength="4" required>
+                                <div class="error-message">Please enter a valid CVV</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cardName" class="required">Name on Card</label>
+                            <input type="text" id="cardName" name="cardName" 
+                                   placeholder="John Doe" required>
+                            <div class="error-message">Cardholder name is required</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="billingAddress"> 
+                                Billing address same as shipping address
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="security-badges">
+                        <div class="badge">🔒 SSL Secured</div>
+                        <div class="badge">🛡️ PCI Compliant</div>
+                        <div class="badge">✅ Verified by Visa</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary">← Return to Cart</button>
+                    <button type="submit" class="btn btn-primary" id="placeOrder">Complete Order</button>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="order-summary">
+                <h3>Order Summary</h3>
+                
+                <div class="order-items">
+                    <div class="order-item">
+                        <div class="item-image"></div>
+                        <div class="item-details">
+                            <div class="item-name">Wireless Headphones</div>
+                            <div class="item-price">$99.99</div>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn">-</button>
+                                <input type="number" class="quantity-input" value="1" min="1" max="99">
+                                <button class="quantity-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-item">
+                        <div class="item-image"></div>
+                        <div class="item-details">
+                            <div class="item-name">Smartphone Case</div>
+                            <div class="item-price">$24.99</div>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn">-</button>
+                                <input type="number" class="quantity-input" value="2" min="1" max="99">
+                                <button class="quantity-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="discount-section">
+                    <h4>Discount Code</h4>
+                    <div class="discount-input">
+                        <input type="text" id="discountCode" placeholder="Enter code" value="SAVE15">
+                        <button class="btn btn-secondary">Apply</button>
+                    </div>
+                    <div class="discount-message" style="color: #16a34a; font-size: 14px; margin-top: 10px;">
+                        ✅ SAVE15 applied: 15% off
+                    </div>
+                </div>
+
+                <div class="order-totals">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span>$149.97</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Discount (SAVE15):</span>
+                        <span style="color: #16a34a;">-$22.50</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Shipping:</span>
+                        <span>$5.99</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Tax:</span>
+                        <span>$10.21</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>Total:</span>
+                        <span>$143.67</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 6px;">
+                    <div style="font-size: 14px; color: #1e40af;">
+                        💰 You saved $22.50 with discount code SAVE15!<br>
+                        🚚 Add $31.33 more to qualify for free shipping.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Basic form validation and interaction scripts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Shipping option selection
+            const shippingOptions = document.querySelectorAll('.shipping-option');
+            shippingOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    shippingOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // Payment method selection
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    paymentMethods.forEach(mtd => mtd.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // Quantity controls
+            const quantityBtns = document.querySelectorAll('.quantity-btn');
+            quantityBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const input = this.parentElement.querySelector('.quantity-input');
+                    const current = parseInt(input.value);
+                    const isDecrease = this.textContent === '-';
+                    
+                    if (isDecrease && current > 1) {
+                        input.value = current - 1;
+                    } else if (!isDecrease && current < 99) {
+                        input.value = current + 1;
+                    }
+                });
+            });
+
+            // Form validation
+            const form = document.querySelector('.checkout-form');
+            const placeOrderBtn = document.getElementById('placeOrder');
+            
+            placeOrderBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Basic validation
+                const requiredFields = form.querySelectorAll('[required]');
+                let isValid = true;
+                
+                requiredFields.forEach(field => {
+                    const errorMsg = field.parentElement.querySelector('.error-message');
+                    
+                    if (!field.value.trim()) {
+                        field.classList.add('error');
+                        if (errorMsg) errorMsg.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        field.classList.remove('error');
+                        if (errorMsg) errorMsg.style.display = 'none';
+                    }
+                });
+                
+                if (isValid) {
+                    alert('Order placed successfully! (This is a demo)');
+                } else {
+                    alert('Please fill in all required fields correctly.');
+                }
+            });
+
+            // Real-time email validation
+            const emailField = document.getElementById('email');
+            emailField.addEventListener('blur', function() {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const errorMsg = this.parentElement.querySelector('.error-message');
+                
+                if (!emailPattern.test(this.value)) {
+                    this.classList.add('error');
+                    errorMsg.style.display = 'block';
+                } else {
+                    this.classList.remove('error');
+                    errorMsg.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

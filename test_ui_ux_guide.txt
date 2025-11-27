@@ -1,0 +1,244 @@
+UI/UX Design Guidelines - ShopMaster Pro E-Commerce Platform
+
+=================================================================
+VISUAL DESIGN STANDARDS
+=================================================================
+
+Color Palette:
+- Primary Blue: #2563eb (buttons, links, highlights)
+- Secondary Green: #16a34a (success messages, confirm actions)
+- Warning Orange: #ea580c (alerts, important notices)
+- Error Red: #dc2626 (error messages, validation failures)
+- Neutral Gray: #6b7280 (text, borders, backgrounds)
+- Light Gray: #f9fafb (form backgrounds, card backgrounds)
+- White: #ffffff (main background, content areas)
+
+Typography:
+- Primary Font: Inter, system-ui, sans-serif
+- Heading 1: 32px, font-weight: 700, line-height: 1.2
+- Heading 2: 24px, font-weight: 600, line-height: 1.3
+- Body Text: 16px, font-weight: 400, line-height: 1.5
+- Small Text: 14px, font-weight: 400, line-height: 1.4
+- Button Text: 16px, font-weight: 500, line-height: 1
+
+Button Specifications:
+- Primary Button: Blue background (#2563eb), white text, 12px padding, 6px border-radius
+- Secondary Button: White background, blue border and text, same padding/radius
+- Danger Button: Red background (#dc2626), white text
+- Button States: hover (darker shade), active (pressed effect), disabled (gray)
+- Minimum button size: 44px height for touch targets
+
+=================================================================
+CHECKOUT FLOW DESIGN REQUIREMENTS
+=================================================================
+
+Step 1: Shopping Cart Review
+- Cart items displayed in table format with product image, name, price, quantity
+- Quantity controls: minus button, input field (1-99), plus button
+- Remove item: small "X" icon with confirmation
+- Subtotal calculation: real-time updates
+- Continue Shopping button: secondary style, left aligned
+- Proceed to Checkout button: primary style, right aligned
+
+Step 2: Customer Information
+- Form layout: single column on mobile, two column on desktop
+- Required fields marked with red asterisk (*)
+- Input field styling: 1px gray border, 8px padding, 4px border-radius
+- Focus state: blue border (#2563eb), blue outline
+- Error state: red border, red error message below field
+
+Email Input:
+- Label: "Email Address *"
+- Placeholder: "your@email.com"
+- Validation: real-time email format checking
+- Error message: "Please enter a valid email address"
+
+Guest Checkout vs Account Creation:
+- Radio buttons to select option
+- Guest checkout: email only required
+- Create account: email + password confirmation
+
+Step 3: Shipping Address
+- Address form fields in logical order:
+  * First Name * | Last Name *
+  * Company (optional)
+  * Street Address *
+  * Apartment/Suite (optional)
+  * City * | State/Province * | ZIP/Postal Code *
+  * Country * (dropdown with search)
+  * Phone Number *
+
+Address Validation:
+- Real-time validation for ZIP/postal codes
+- State/province dropdown populated based on country
+- Phone number format checking
+- "Use billing address for shipping" checkbox
+
+Step 4: Shipping Options
+- Radio button list of shipping methods
+- Each option shows: method name, delivery time, cost
+- Free shipping highlighted with green badge
+- Selected option: blue background, white text
+- Shipping cost updates order total in real-time
+
+Step 5: Payment Information
+- Secure payment badge/icon prominently displayed
+- Credit card form:
+  * Card Number field with card type detection
+  * Expiry Date: MM/YY format with dropdowns or masked input
+  * Security Code (CVV): 3-4 digit field with info icon
+  * Cardholder Name: text input
+- Alternative payment methods: PayPal, Apple Pay, Google Pay buttons
+- "Same as shipping address" checkbox for billing
+
+Step 6: Order Review
+- Complete order summary with all details
+- Edit buttons for each section (returns to that step)
+- Terms and conditions checkbox
+- Privacy policy acknowledgment
+- Order total breakdown:
+  * Subtotal
+  * Discount (if applied)
+  * Shipping
+  * Tax
+  * Total (emphasized with larger font)
+
+=================================================================
+FORM VALIDATION AND ERROR HANDLING
+=================================================================
+
+Real-time Validation:
+- Field validation occurs on blur (when user leaves field)
+- Success state: green border, checkmark icon
+- Error state: red border, error icon, error message
+- Required field indicators: red asterisk after label
+
+Error Message Display:
+- Position: directly below the problematic field
+- Color: error red (#dc2626)
+- Font size: 14px
+- Icon: small error icon next to message
+- Animation: fade in when error appears
+
+Common Validation Rules:
+- Email: must match valid email regex pattern
+- Phone: format (XXX) XXX-XXXX or international format
+- ZIP Code: 5 digits (US), postal code format (Canada)
+- Credit Card: Luhn algorithm validation, proper length
+- CVV: 3 digits (Visa/MC), 4 digits (Amex)
+- Expiry Date: must be future date, valid MM/YY format
+
+=================================================================
+RESPONSIVE DESIGN BREAKPOINTS
+=================================================================
+
+Mobile (320px - 767px):
+- Single column layout
+- Full-width buttons
+- Larger touch targets (minimum 44px)
+- Simplified navigation
+- Stack form fields vertically
+- Hide less important information
+
+Tablet (768px - 1023px):
+- Two-column layout where appropriate
+- Maintain mobile-friendly touch targets
+- Show more content per screen
+- Side-by-side buttons where space allows
+
+Desktop (1024px+):
+- Multi-column layouts
+- Hover states for interactive elements
+- Keyboard navigation support
+- Full feature set visible
+- Optimal use of horizontal space
+
+=================================================================
+ACCESSIBILITY REQUIREMENTS
+=================================================================
+
+WCAG 2.1 AA Compliance:
+- Color contrast ratio: minimum 4.5:1 for normal text
+- Focus indicators: visible blue outline for all interactive elements
+- Alt text: descriptive text for all images and icons
+- Label association: proper for attributes connecting labels to inputs
+- Keyboard navigation: tab order follows logical flow
+- Screen reader support: semantic HTML, ARIA labels where needed
+
+Form Accessibility:
+- Required fields announced by screen readers
+- Error messages associated with form fields via aria-describedby
+- Fieldset and legend for grouped form elements
+- Clear instructions for complex fields (password requirements)
+- Progress indicator for multi-step checkout
+
+=================================================================
+PERFORMANCE TARGETS
+=================================================================
+
+Page Load Performance:
+- Initial page load: under 3 seconds
+- Form interactions: under 500ms response time
+- Image optimization: WebP format with fallbacks
+- Lazy loading for below-fold content
+- Minified CSS and JavaScript
+
+Mobile Performance:
+- Touch response: under 100ms
+- Smooth scrolling: 60fps
+- Optimized for 3G networks
+- Progressive enhancement approach
+
+=================================================================
+TESTING SCENARIOS FOR UI ELEMENTS
+=================================================================
+
+Button Testing:
+- Click/tap functionality on all devices
+- Hover states (desktop) and active states (mobile)
+- Disabled state appearance and behavior
+- Loading states with spinner or text change
+- Keyboard accessibility (Enter key activation)
+
+Form Field Testing:
+- Input validation on various data types
+- Error state display and clearing
+- Placeholder text behavior
+- Auto-focus and tab navigation
+- Copy/paste functionality
+- Browser autofill compatibility
+
+Responsive Testing:
+- Layout integrity across all breakpoints
+- Touch target size on mobile devices
+- Text readability at all sizes
+- Image scaling and aspect ratios
+- Navigation usability on small screens
+
+Color and Contrast Testing:
+- Text readability in all color combinations
+- Color-blind user accessibility
+- High contrast mode compatibility
+- Dark mode considerations (if implemented)
+
+=================================================================
+BRAND ELEMENTS
+=================================================================
+
+Logo Usage:
+- ShopMaster Pro logo in header
+- Minimum size: 120px width
+- Clear space: logo height on all sides
+- Monochrome version for dark backgrounds
+
+Icons:
+- Consistent icon library (Heroicons or similar)
+- 16px, 20px, 24px sizes available
+- Outline style for better accessibility
+- Semantic meaning matches visual representation
+
+Loading States:
+- Skeleton screens for content loading
+- Progress bars for multi-step processes
+- Spinner animations for quick actions
+- Loading text: "Processing...", "Validating...", etc.

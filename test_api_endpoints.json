@@ -1,0 +1,313 @@
+{
+  "api_endpoints": {
+    "base_url": "https://api.shopmaster.com/v1",
+    "authentication": {
+      "type": "Bearer Token",
+      "header": "Authorization: Bearer {token}",
+      "login_endpoint": "/auth/login",
+      "refresh_endpoint": "/auth/refresh"
+    },
+    "cart_management": {
+      "get_cart": {
+        "endpoint": "/cart",
+        "method": "GET",
+        "description": "Retrieve current cart contents",
+        "response": {
+          "cart_id": "string",
+          "items": "array",
+          "subtotal": "number",
+          "tax": "number",
+          "total": "number"
+        }
+      },
+      "add_to_cart": {
+        "endpoint": "/cart/items",
+        "method": "POST",
+        "description": "Add product to cart",
+        "parameters": {
+          "product_id": "string (required)",
+          "quantity": "number (required, min: 1, max: 99)",
+          "variant_id": "string (optional)"
+        },
+        "response": {
+          "success": "boolean",
+          "message": "string",
+          "cart_total": "number"
+        }
+      },
+      "update_cart_item": {
+        "endpoint": "/cart/items/{item_id}",
+        "method": "PUT",
+        "description": "Update cart item quantity",
+        "parameters": {
+          "quantity": "number (required, min: 0, max: 99)"
+        }
+      },
+      "remove_from_cart": {
+        "endpoint": "/cart/items/{item_id}",
+        "method": "DELETE",
+        "description": "Remove item from cart"
+      }
+    },
+    "discount_management": {
+      "validate_discount": {
+        "endpoint": "/discounts/validate",
+        "method": "POST",
+        "description": "Validate discount code",
+        "parameters": {
+          "code": "string (required)",
+          "cart_total": "number (required)"
+        },
+        "response": {
+          "valid": "boolean",
+          "discount_type": "string",
+          "discount_value": "number",
+          "minimum_order": "number",
+          "error_message": "string"
+        }
+      },
+      "apply_discount": {
+        "endpoint": "/cart/discount",
+        "method": "POST",
+        "description": "Apply discount to cart",
+        "parameters": {
+          "discount_code": "string (required)"
+        }
+      }
+    },
+    "shipping": {
+      "calculate_shipping": {
+        "endpoint": "/shipping/calculate",
+        "method": "POST",
+        "description": "Calculate shipping costs",
+        "parameters": {
+          "address": {
+            "street": "string (required)",
+            "city": "string (required)",
+            "state": "string (required)",
+            "zip_code": "string (required)",
+            "country": "string (required)"
+          },
+          "cart_weight": "number",
+          "cart_value": "number"
+        },
+        "response": {
+          "shipping_options": [
+            {
+              "id": "standard",
+              "name": "Standard Shipping",
+              "cost": 5.99,
+              "delivery_time": "5-7 business days"
+            },
+            {
+              "id": "express",
+              "name": "Express Shipping", 
+              "cost": 12.99,
+              "delivery_time": "2-3 business days"
+            },
+            {
+              "id": "overnight",
+              "name": "Overnight Delivery",
+              "cost": 24.99,
+              "delivery_time": "Next business day"
+            }
+          ]
+        }
+      }
+    },
+    "payment_processing": {
+      "create_payment_intent": {
+        "endpoint": "/payments/create-intent",
+        "method": "POST",
+        "description": "Create payment intent for checkout",
+        "parameters": {
+          "amount": "number (required)",
+          "currency": "string (default: USD)",
+          "payment_method": "string (required)"
+        }
+      },
+      "process_payment": {
+        "endpoint": "/payments/process",
+        "method": "POST",
+        "description": "Process payment transaction",
+        "parameters": {
+          "payment_intent_id": "string (required)",
+          "payment_details": {
+            "card_number": "string (required, 13-19 digits)",
+            "expiry_month": "number (required, 1-12)",
+            "expiry_year": "number (required)",
+            "cvv": "string (required, 3-4 digits)",
+            "cardholder_name": "string (required)"
+          },
+          "billing_address": {
+            "street": "string (required)",
+            "city": "string (required)",
+            "state": "string (required)",
+            "zip_code": "string (required)"
+          }
+        }
+      }
+    },
+    "order_management": {
+      "create_order": {
+        "endpoint": "/orders",
+        "method": "POST",
+        "description": "Create new order after successful payment",
+        "parameters": {
+          "cart_id": "string (required)",
+          "payment_intent_id": "string (required)",
+          "shipping_address": "object (required)",
+          "billing_address": "object (required)",
+          "shipping_method": "string (required)"
+        }
+      },
+      "get_order": {
+        "endpoint": "/orders/{order_id}",
+        "method": "GET",
+        "description": "Retrieve order details"
+      },
+      "track_order": {
+        "endpoint": "/orders/{order_id}/tracking",
+        "method": "GET",
+        "description": "Get order tracking information"
+      }
+    }
+  },
+  "test_data": {
+    "valid_discount_codes": [
+      {
+        "code": "SAVE15",
+        "type": "percentage",
+        "value": 15,
+        "minimum_order": 50,
+        "description": "15% off orders over $50"
+      },
+      {
+        "code": "FREESHIP",
+        "type": "free_shipping",
+        "value": 0,
+        "minimum_order": 75,
+        "description": "Free shipping on orders over $75"
+      },
+      {
+        "code": "WELCOME10",
+        "type": "fixed_amount",
+        "value": 10,
+        "minimum_order": 0,
+        "description": "$10 off first order"
+      }
+    ],
+    "invalid_discount_codes": [
+      {
+        "code": "EXPIRED10",
+        "error": "This discount code has expired"
+      },
+      {
+        "code": "INVALIDCODE",
+        "error": "Invalid discount code"
+      },
+      {
+        "code": "USED2023",
+        "error": "This discount code has already been used"
+      }
+    ],
+    "test_products": [
+      {
+        "product_id": "PROD-001",
+        "name": "Wireless Headphones",
+        "price": 99.99,
+        "weight": 0.5,
+        "in_stock": true,
+        "stock_quantity": 25
+      },
+      {
+        "product_id": "PROD-002",
+        "name": "Smartphone Case",
+        "price": 24.99,
+        "weight": 0.1,
+        "in_stock": true,
+        "stock_quantity": 100
+      },
+      {
+        "product_id": "PROD-003",
+        "name": "Gaming Mouse",
+        "price": 79.99,
+        "weight": 0.3,
+        "in_stock": false,
+        "stock_quantity": 0
+      }
+    ],
+    "test_addresses": {
+      "valid_us_address": {
+        "street": "123 Main Street",
+        "city": "New York",
+        "state": "NY",
+        "zip_code": "10001",
+        "country": "US"
+      },
+      "valid_ca_address": {
+        "street": "456 Maple Avenue",
+        "city": "Toronto",
+        "state": "ON",
+        "zip_code": "M5H 2N2",
+        "country": "CA"
+      },
+      "invalid_address": {
+        "street": "",
+        "city": "Invalid City",
+        "state": "XX",
+        "zip_code": "00000",
+        "country": "US"
+      }
+    },
+    "test_payment_methods": {
+      "valid_visa": {
+        "card_number": "4111111111111111",
+        "expiry_month": 12,
+        "expiry_year": 2025,
+        "cvv": "123",
+        "cardholder_name": "John Doe"
+      },
+      "valid_mastercard": {
+        "card_number": "5555555555554444",
+        "expiry_month": 6,
+        "expiry_year": 2026,
+        "cvv": "456",
+        "cardholder_name": "Jane Smith"
+      },
+      "invalid_card": {
+        "card_number": "1234567890123456",
+        "expiry_month": 1,
+        "expiry_year": 2020,
+        "cvv": "000",
+        "cardholder_name": ""
+      }
+    }
+  },
+  "error_codes": {
+    "validation_errors": {
+      "INVALID_EMAIL": "Please enter a valid email address",
+      "WEAK_PASSWORD": "Password must be at least 8 characters with uppercase, number, and special character",
+      "REQUIRED_FIELD": "This field is required",
+      "INVALID_PHONE": "Please enter a valid phone number",
+      "INVALID_ZIP": "Please enter a valid ZIP/postal code"
+    },
+    "cart_errors": {
+      "ITEM_NOT_FOUND": "The requested item was not found",
+      "INSUFFICIENT_STOCK": "Not enough items in stock",
+      "CART_EMPTY": "Your cart is empty",
+      "QUANTITY_EXCEEDED": "Maximum quantity per item is 99"
+    },
+    "payment_errors": {
+      "CARD_DECLINED": "Your card was declined. Please try a different payment method",
+      "INSUFFICIENT_FUNDS": "Insufficient funds available",
+      "EXPIRED_CARD": "Your card has expired",
+      "INVALID_CVV": "Please check your security code"
+    },
+    "shipping_errors": {
+      "INVALID_ADDRESS": "Please verify your shipping address",
+      "SHIPPING_NOT_AVAILABLE": "Shipping is not available to this location",
+      "WEIGHT_EXCEEDED": "Order exceeds maximum weight limit"
+    }
+  }
+}
