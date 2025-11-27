@@ -46,27 +46,29 @@ RUN wget -q -O /tmp/google-chrome-stable_current_amd64.deb \
 WORKDIR /app
 
 # Copy dependency files first for better caching
-COPY requirements.txt requirements-streamlit.txt requirements-ai.txt ./
+COPY requirements-production.txt requirements.txt ./
 
 # Upgrade pip and install Python dependencies
 RUN python -m pip install --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements.txt -r requirements-streamlit.txt -r requirements-ai.txt \
-    && pip install --no-cache-dir webdriver-manager
+    && pip install --no-cache-dir -r requirements-production.txt \
+    && pip install --no-cache-dir gunicorn
 
 # Copy application code
 COPY . /app
 
 # Expose port (Render provides PORT env var during runtime)
-EXPOSE 8502
+EXPOSE 8501
 
-# Environment defaults
-ENV PORT=8502
+# Environment defaults for Streamlit
+ENV PORT=8501
 ENV CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --disable-gpu --single-process"
 ENV PYTHONPATH=.
+ENV STREAMLIT_SERVER_HEADLESS=true
+ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
-# Healthcheck (optional): try to hit the health endpoint
-HEALTHCHECK --interval=1m --timeout=10s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:${PORT}/health || exit 1
+# Healthcheck for Streamlit
+HEALTHCHECK --interval=1m --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:${PORT}/_stcore/health || exit 1
 
-# Start the app using the existing render_start.py which spins up the HTTP server and background tasks
-CMD ["python", "render_start.py"]
+# Start the Streamlit app via production script
+CMD ["python", "production_start.py"]

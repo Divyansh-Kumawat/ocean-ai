@@ -21,3 +21,9 @@ node_modules
 .idea
 .vscode
 .render
+*.log
+*.db
+qa_knowledge_base.db
+.pytest_cache
+coverage.xml
+*.coverage
