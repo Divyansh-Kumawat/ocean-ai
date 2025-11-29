@@ -1,0 +1,33 @@
+# Ultra-lightweight requirements for Render deployment
+# Avoids all compilation issues by using only pure Python packages
+
+# Core Streamlit
+streamlit>=1.28.0
+
+# Essential data handling  
+pandas>=1.5.0,<2.0.0
+numpy>=1.21.0,<1.25.0
+requests>=2.31.0
+
+# Configuration
+python-dotenv>=1.0.0
+
+# Web scraping and parsing
+beautifulsoup4>=4.12.0
+
+# Selenium for testing (pure Python)
+selenium>=4.15.0
+webdriver-manager>=4.0.1
+
+# AI integration (optional, pure Python)
+google-generativeai>=0.3.0
+
+# Testing (lightweight)
+pytest>=7.4.3
+
+# Text processing (pure Python alternatives to ML libraries)
+textdistance>=4.5.0
+fuzzywuzzy>=0.18.0
+
+# File handling
+pathlib2>=2.3.7

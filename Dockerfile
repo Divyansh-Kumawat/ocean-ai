@@ -34,23 +34,30 @@ RUN apt-get update \
        procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome (stable)
-RUN wget -q -O /tmp/google-chrome-stable_current_amd64.deb \
-      https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends /tmp/google-chrome-stable_current_amd64.deb \
-    && rm -rf /tmp/google-chrome-stable_current_amd64.deb \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create app directory
+    # Install Chrome based on architecture
+    RUN if [ "$(uname -m)" = "x86_64" ]; then \
+        # AMD64 architecture
+        wget -q -O /tmp/google-chrome-stable_current_amd64.deb \
+            https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends /tmp/google-chrome-stable_current_amd64.deb \
+        && rm -rf /tmp/google-chrome-stable_current_amd64.deb; \
+    else \
+        # ARM64 or other architectures - use Chromium
+        echo "Installing Chromium for non-AMD64 architecture" \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends chromium chromium-driver; \
+    fi \
+    && rm -rf /var/lib/apt/lists/*# Create app directory
 WORKDIR /app
 
 # Copy dependency files first for better caching
-COPY requirements-production.txt requirements.txt ./
+COPY requirements-render.txt ./
 
-# Upgrade pip and install Python dependencies
+# Upgrade pip and install Python dependencies with error handling
 RUN python -m pip install --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements-production.txt \
+    && pip install --no-cache-dir --only-binary=all -r requirements-render.txt \
+    || (echo "Installing with fallback options..." && pip install --no-cache-dir -r requirements-render.txt --no-build-isolation) \
     && pip install --no-cache-dir gunicorn
 
 # Copy application code

@@ -1,6 +1,8 @@
 # Production Requirements - Minimal for Render deployment
+# Use pre-compiled wheels to avoid Cython compilation issues
+
 streamlit>=1.28.0
-pandas>=1.5.0
+pandas>=1.5.0,<2.0.0
 requests>=2.31.0
 python-dotenv>=1.0.0
 
@@ -9,8 +11,16 @@ beautifulsoup4>=4.12.0
 selenium>=4.15.0
 webdriver-manager>=4.0.1
 
-# Optional: AI features (comment out if causing build issues)
-# google-generativeai>=0.3.0
+# Use specific versions to avoid compilation issues
+numpy>=1.21.0,<1.25.0
+
+# Optional: AI features (lightweight alternatives)
+google-generativeai>=0.3.0
 
 # Testing framework
 pytest>=7.4.3
+
+# Alternative to scikit-learn if compilation fails
+# Use lighter weight alternatives or remove ML features
+# textdistance>=4.5.0  # For text similarity without ML
+# fuzzywuzzy>=0.18.0   # For fuzzy string matching

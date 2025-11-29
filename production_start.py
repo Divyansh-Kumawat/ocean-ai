@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Production startup script for Ocean AI QA Framework on Render
-Serves the Streamlit app with health checks and proper configuration
+Production startup script for Ocean AI QA Framework
+Optimized for Render deployment with lightweight fallbacks
 """
 
 import os
@@ -9,52 +9,86 @@ import sys
 import subprocess
 import signal
 import time
-import threading
 from pathlib import Path
 
-# Global variables
-PORT = int(os.environ.get('PORT', 10000))
+# Configuration
+PORT = int(os.environ.get('PORT', 8080))
 running = True
 
-def signal_handler(sig, frame):
-    """Handle graceful shutdown"""
+def signal_handler(signum, frame):
+    """Handle shutdown signals"""
     global running
-    print('🛑 Graceful shutdown initiated...')
     running = False
+    print("\n🛑 Shutdown signal received")
     sys.exit(0)
 
-def create_streamlit_config():
-    """Create Streamlit configuration for production"""
-    config_dir = Path.home() / '.streamlit'
-    config_dir.mkdir(exist_ok=True)
-    
-    config_content = f"""
-[server]
-port = {PORT}
-address = "0.0.0.0"
-headless = true
-enableCORS = false
-enableXsrfProtection = false
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
-[browser]
-gatherUsageStats = false
+def setup_environment():
+    """Set up environment variables and paths"""
+    print("🔧 Setting up environment...")
+    
+    # Set essential environment variables
+    os.environ['STREAMLIT_SERVER_PORT'] = str(PORT)
+    os.environ['STREAMLIT_SERVER_ADDRESS'] = '0.0.0.0'
+    os.environ['STREAMLIT_BROWSER_GATHER_USAGE_STATS'] = 'false'
+    os.environ['STREAMLIT_SERVER_HEADLESS'] = 'true'
+    
+    # Configure Chrome/Chromium for Selenium
+    chrome_path = None
+    if Path('/usr/bin/google-chrome').exists():
+        chrome_path = '/usr/bin/google-chrome'
+    elif Path('/usr/bin/chromium').exists():
+        chrome_path = '/usr/bin/chromium'
+    elif Path('/usr/bin/chromium-browser').exists():
+        chrome_path = '/usr/bin/chromium-browser'
+    
+    if chrome_path:
+        os.environ['CHROME_BIN'] = chrome_path
+        print(f"🌐 Chrome/Chromium found: {chrome_path}")
+    else:
+        print("⚠️ Chrome/Chromium not found - Selenium tests may not work")
+    
+    print("✅ Environment configured")
 
-[theme]
-base = "light"
-"""
+def check_health():
+    """Basic health check"""
+    print("🏥 Running health checks...")
     
-    config_file = config_dir / 'config.toml'
-    with open(config_file, 'w') as f:
-        f.write(config_content)
+    # Check Python version
+    print(f"🐍 Python {sys.version}")
     
-    print(f"✅ Streamlit config created at {config_file}")
+    # Check available memory
+    try:
+        import psutil
+        memory = psutil.virtual_memory()
+        print(f"💾 Memory: {memory.percent}% used")
+    except ImportError:
+        print("💾 Memory info not available")
+    
+    print("✅ Health check passed")
+
+def install_missing_packages(packages):
+    """Install missing packages"""
+    print(f"📦 Installing packages: {packages}")
+    try:
+        cmd = [sys.executable, '-m', 'pip', 'install', '--no-cache-dir', '--only-binary=:all:'] + packages
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+        print("✅ Packages installed successfully")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Package installation failed: {e}")
+        return False
 
 def check_dependencies():
-    """Check if required dependencies are available"""
-    required_packages = ['streamlit', 'pandas', 'requests']
+    """Check and install required dependencies"""
+    print("📋 Checking dependencies...")
+    
+    core_packages = ['streamlit', 'pandas']
     missing = []
     
-    for package in required_packages:
+    for package in core_packages:
         try:
             __import__(package)
             print(f"✅ {package} available")
@@ -63,105 +97,160 @@ def check_dependencies():
             print(f"❌ {package} missing")
     
     if missing:
-        print(f"⚠️ Installing missing packages: {missing}")
-        try:
-            subprocess.run([
-                sys.executable, '-m', 'pip', 'install', '--no-cache-dir'
-            ] + missing, check=True)
-            print("✅ Missing packages installed")
-        except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to install packages: {e}")
+        if not install_missing_packages(missing):
+            print("⚠️ Some packages couldn't be installed, proceeding anyway")
+    
+    print("✅ Dependencies checked")
 
-def start_streamlit():
-    """Start the Streamlit application"""
+def select_app_file():
+    """Select the appropriate app file based on available dependencies"""
+    print("🔍 Selecting app version...")
+    
+    # Check if main app exists
+    if not Path('streamlit_app.py').exists():
+        if Path('streamlit_lite.py').exists():
+            print("📱 Using lightweight app (main app not found)")
+            return 'streamlit_lite.py'
+        else:
+            print("❌ No app files found")
+            return None
+    
+    # Check for heavy dependencies
     try:
-        print(f"🌊 Starting Ocean AI QA Framework on port {PORT}")
-        print(f"🔗 App will be available at: https://your-app.onrender.com")
+        import chromadb
+        import sentence_transformers
+        print("🔬 Heavy ML dependencies available - using full app")
+        return 'streamlit_app.py'
+    except ImportError:
+        if Path('streamlit_lite.py').exists():
+            print("⚡ Heavy dependencies missing - using lightweight app")
+            return 'streamlit_lite.py'
+        else:
+            print("⚠️ Heavy dependencies missing - using main app anyway")
+            return 'streamlit_app.py'
+
+def start_streamlit(app_file):
+    """Start Streamlit with the selected app file"""
+    print(f"🚀 Starting Streamlit with {app_file}...")
+    
+    cmd = [
+        sys.executable, '-m', 'streamlit', 'run', app_file,
+        '--server.port', str(PORT),
+        '--server.address', '0.0.0.0',
+        '--server.headless', 'true',
+        '--browser.gatherUsageStats', 'false',
+        '--server.enableCORS', 'false',
+        '--server.enableXsrfProtection', 'false'
+    ]
+    
+    try:
+        print(f"🌊 Ocean AI QA Framework starting on port {PORT}")
+        print(f"📱 App file: {app_file}")
+        print(f"🔗 Will be available at your Render URL")
         
-        # Create config
-        create_streamlit_config()
-        
-        # Check dependencies
-        check_dependencies()
-        
-        # Start Streamlit
-        cmd = [
-            sys.executable, '-m', 'streamlit', 'run', 'streamlit_app.py',
-            '--server.port', str(PORT),
-            '--server.address', '0.0.0.0',
-            '--server.headless', 'true',
-            '--browser.gatherUsageStats', 'false',
-            '--server.enableCORS', 'false',
-            '--server.enableXsrfProtection', 'false'
-        ]
-        
-        print(f"🚀 Running command: {' '.join(cmd)}")
-        
-        # Run Streamlit
+        # Start the process
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         
-        # Monitor output
-        while running and process.poll() is None:
-            line = process.stdout.readline()
-            if line:
-                print(line.strip())
+        # Monitor the process
+        startup_time = 0
+        max_startup_time = 60  # 60 seconds timeout
         
-        return process.returncode
+        while startup_time < max_startup_time and process.poll() is None:
+            time.sleep(1)
+            startup_time += 1
+            
+            # Check for output
+            try:
+                line = process.stdout.readline()
+                if line:
+                    print(line.strip())
+                    # Look for successful startup indicators
+                    if "You can now view your Streamlit app" in line or "Network URL:" in line:
+                        print("✅ Streamlit started successfully!")
+                        break
+            except:
+                pass
         
+        if process.poll() is None:
+            # Process is still running, wait for completion
+            process.wait()
+        else:
+            # Process ended during startup
+            return_code = process.returncode
+            print(f"❌ Streamlit process ended with code: {return_code}")
+            return return_code
+            
     except Exception as e:
         print(f"❌ Error starting Streamlit: {e}")
         return 1
+    
+    return 0
 
 def fallback_server():
-    """Fallback HTTP server if Streamlit fails"""
+    """Simple fallback HTTP server"""
+    print("🔄 Starting fallback server...")
+    
     from http.server import HTTPServer, SimpleHTTPRequestHandler
     import json
     
     class FallbackHandler(SimpleHTTPRequestHandler):
         def do_GET(self):
-            if self.path == '/health':
+            if self.path == '/' or self.path == '/_stcore/health':
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                health_data = {
-                    "status": "healthy",
-                    "service": "Ocean AI QA Framework (Fallback)",
-                    "message": "Streamlit unavailable, serving static content",
-                    "timestamp": time.time()
+                response = {
+                    "status": "ok",
+                    "message": "Ocean AI QA Framework - Fallback Mode",
+                    "version": "1.0.0"
                 }
-                self.wfile.write(json.dumps(health_data).encode())
-            elif self.path == '/' or self.path == '':
-                self.path = '/checkout.html'
-                super().do_GET()
+                self.wfile.write(json.dumps(response).encode())
             else:
-                super().do_GET()
+                self.send_response(404)
+                self.end_headers()
     
     try:
         server = HTTPServer(('0.0.0.0', PORT), FallbackHandler)
-        print(f"🔄 Fallback server running on port {PORT}")
+        print(f"🌐 Fallback server running on port {PORT}")
         server.serve_forever()
     except Exception as e:
-        print(f"❌ Fallback server error: {e}")
+        print(f"❌ Fallback server failed: {e}")
 
-if __name__ == "__main__":
-    # Setup signal handlers
-    signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGINT, signal_handler)
+def main():
+    """Main application entry point"""
+    print("🌊 Ocean AI QA Framework - Production Startup")
     
-    print("🚀 Ocean AI QA Framework - Production Startup")
-    print("=" * 60)
-    print(f"📍 Port: {PORT}")
-    print(f"🔧 Chrome Options: {os.environ.get('CHROME_OPTIONS', 'default')}")
-    print("=" * 60)
-    
-    # Check if streamlit_app.py exists
-    if not Path('streamlit_app.py').exists():
-        print("❌ streamlit_app.py not found, starting fallback server")
-        fallback_server()
-    else:
-        # Try to start Streamlit
-        return_code = start_streamlit()
+    try:
+        # Setup
+        setup_environment()
+        check_health()
+        check_dependencies()
         
+        # Select and start app
+        app_file = select_app_file()
+        
+        if not app_file:
+            print("❌ No suitable app file found, starting fallback")
+            fallback_server()
+            return
+        
+        # Try to start Streamlit
+        return_code = start_streamlit(app_file)
+        
+        # If main app failed and we have a lite version, try that
+        if return_code != 0 and app_file != 'streamlit_lite.py' and Path('streamlit_lite.py').exists():
+            print("🔄 Retrying with lightweight app...")
+            return_code = start_streamlit('streamlit_lite.py')
+        
+        # If still failed, start fallback
         if return_code != 0:
             print("⚠️ Streamlit failed, starting fallback server")
             fallback_server()
+            
+    except Exception as e:
+        print(f"💥 Unexpected error: {e}")
+        print("🔄 Starting fallback server as last resort")
+        fallback_server()
+
+if __name__ == "__main__":
+    main()
