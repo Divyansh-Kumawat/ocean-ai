@@ -1,23 +1,25 @@
-# Core Selenium dependencies
-selenium==4.15.0
-webdriver-manager==4.0.1
+# Streamlit
+streamlit>=1.30.0
 
-# Testing framework
-pytest==7.4.3
-pytest-html==4.1.1
+# Google Gemini AI
+google-generativeai>=0.8.0
 
-# Web server and deployment
-requests==2.31.0
-schedule==1.2.0
-gunicorn==21.2.0
-beautifulsoup4==4.12.2
-python-dotenv==1.0.0
+# Vector Database and Embeddings
+chromadb>=1.0.0
+sentence-transformers>=2.2.0
 
-# ML/NLP dependencies - compatible versions for Python 3.11+
-# Using pre-compiled wheels to avoid Cython compilation issues
-numpy>=1.21.0,<2.0.0
-scikit-learn>=1.1.0,<1.4.0
+# Document Processing
+beautifulsoup4>=4.12.0
+PyMuPDF>=1.23.0
+python-dotenv>=1.0.0
 
-# Alternative lightweight NLP if scikit-learn fails
-# sentence-transformers==2.2.2
-# transformers==4.21.0
+# Core dependencies
+requests>=2.31.0
+pandas>=2.0.0
+
+# Selenium for test automation
+selenium>=4.15.0
+webdriver-manager>=4.0.1
+
+# Testing
+pytest>=7.4.0
