@@ -208,8 +208,13 @@ class VectorDatabase:
         
         if SENTENCE_TRANSFORMERS_AVAILABLE:
             try:
-                # Force CPU mode for Streamlit Cloud compatibility
-                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+                # Force clean model loading in writable directory for Streamlit Cloud
+                os.environ['SENTENCE_TRANSFORMERS_HOME'] = '/tmp/sentence_transformers'
+                self.embedding_model = SentenceTransformer(
+                    'all-MiniLM-L6-v2', 
+                    device='cpu',
+                    cache_folder='/tmp/sentence_transformers'
+                )
             except Exception as e:
                 st.warning(f"Could not initialize SentenceTransformer with CPU: {e}")
                 # Fall back to basic text search without embeddings
