@@ -1,5 +1,5 @@
 # E-Shop Checkout QA Testing Framework
-
+Deployed Link- https://ocean-ai-assignment-by-divyansh.streamlit.app/
 This directory contains a comprehensive testing framework for the E-Shop Checkout application, built according to autonomous QA lead requirements with strict grounding in provided context.
 
 ## Project Structure
