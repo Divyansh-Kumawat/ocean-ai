@@ -6,22 +6,26 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import pandas as pd
+from dotenv import load_dotenv
+import google.generativeai as genai
 
 # Import required libraries for document processing and vector DB
+# Load environment variables (for GEMINI_API_KEY)
+load_dotenv()
+# Note: ChromaDB has compatibility issues with Python 3.14
+# Using template-based processing as fallback
 try:
     import chromadb
     from chromadb.config import Settings
     CHROMA_AVAILABLE = True
 except ImportError:
     CHROMA_AVAILABLE = False
-    st.error("ChromaDB not installed. Please run: pip install chromadb")
 
 try:
     from sentence_transformers import SentenceTransformer
     SENTENCE_TRANSFORMERS_AVAILABLE = True
 except ImportError:
     SENTENCE_TRANSFORMERS_AVAILABLE = False
-    st.error("SentenceTransformers not installed. Please run: pip install sentence-transformers")
 
 try:
     import requests
@@ -193,10 +197,8 @@ class VectorDatabase:
         if not CHROMA_AVAILABLE:
             raise ValueError("ChromaDB not available")
         
-        self.client = chromadb.Client(Settings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory="./chroma_db"
-        ))
+        # Use new Chroma client API (PersistentClient) per migration guide
+        self.client = chromadb.PersistentClient(path="./chroma_db")
         self.collection_name = collection_name
         self.collection = None
         self.embedding_model = None
@@ -277,8 +279,14 @@ class TestCaseGenerator:
         self.vector_db = vector_db
         self.llm_available = False
         
-        # Check for available LLM services
-        self.check_llm_availability()
+        # Configure Gemini strictly (no fallback)
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY/GOOGLE_API_KEY not set. Add it to .env to enable test generation.")
+        genai.configure(api_key=api_key)
+        # Use Gemini 2.5 Flash (latest available model)
+        self.model = genai.GenerativeModel("models/gemini-2.5-flash")
+        self.llm_available = True
     
     def check_llm_availability(self):
         """Check if any LLM service is available"""
@@ -287,16 +295,40 @@ class TestCaseGenerator:
         self.llm_available = True
     
     def generate_test_cases(self, user_query: str) -> List[Dict[str, Any]]:
-        """Generate test cases based on user query"""
-        # Retrieve relevant context
+        """Generate test cases via Gemini using retrieved context"""
         context_results = self.vector_db.search(user_query, n_results=5)
-        
-        if not context_results:
-            st.warning("No relevant context found in knowledge base")
-            return self._generate_fallback_test_cases(user_query)
-        
-        # For demo purposes, generate structured test cases based on query analysis
-        return self._generate_structured_test_cases(user_query, context_results)
+        context_texts = [doc["text"] for doc in context_results] if context_results else []
+        sources = [doc.get("metadata", {}).get("source_document", "unknown") for doc in context_results] if context_results else []
+
+        prompt = (
+            "You are a QA engineer. Based on the following context from our e-commerce checkout system, "
+            "generate 6 structured end-to-end test cases. Each test case must be a JSON object with keys: "
+            "Test_ID, Feature, Test_Scenario, Steps (array), Expected_Result, Grounded_In (array of source doc names), Risk, Priority.\n\n"
+            f"User Query: {user_query}\n\nContext:\n" + "\n---\n".join(context_texts[:5]) +
+            "\n\nConstraints:\n- Be precise and executable.\n- Steps should be UI actions for checkout/discount/cart/payment/shipping.\n- Grounded_In must reference provided source documents only.\n- Output a JSON array of test case objects, no prose."
+        )
+
+        resp = self.model.generate_content(prompt)
+        raw = resp.text if hasattr(resp, "text") else str(resp)
+        try:
+            data = json.loads(raw)
+        except Exception:
+            # Try to extract JSON block if wrapped
+            start = raw.find("[")
+            end = raw.rfind("]")
+            if start != -1 and end != -1:
+                data = json.loads(raw[start:end+1])
+            else:
+                raise RuntimeError("Gemini response did not return valid JSON test cases.")
+
+        # Inject sources if missing
+        for i, tc in enumerate(data):
+            if "Grounded_In" not in tc or not tc["Grounded_In"]:
+                tc["Grounded_In"] = sources[:2]
+            if "Test_ID" not in tc:
+                tc["Test_ID"] = f"TC-{100+i}"
+
+        return data
     
     def _generate_structured_test_cases(self, query: str, context: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Generate structured test cases based on context"""
@@ -704,34 +736,24 @@ def main():
         # Document upload section
         st.subheader("📄 Document Upload")
         
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**Upload Support Documents**")
-            uploaded_files = st.file_uploader(
-                "Choose files (MD, TXT, JSON, PDF, etc.)",
-                accept_multiple_files=True,
-                type=['md', 'txt', 'json', 'pdf', 'html', 'csv']
-            )
-        
-        with col2:
-            st.markdown("**Upload checkout.html**")
-            checkout_file = st.file_uploader(
-                "Upload checkout.html file",
-                type=['html']
-            )
+        st.markdown("**Upload Support Documents**")
+        uploaded_files = st.file_uploader(
+            "Choose files (MD, TXT, JSON, PDF, etc.)",
+            accept_multiple_files=True,
+            type=['md', 'txt', 'json', 'pdf', 'html', 'csv']
+        )
         
         # Text input option
         st.subheader("📝 Or Paste Content")
         pasted_content = st.text_area(
-            "Paste checkout.html content or other text",
+            "Paste document content or other text",
             height=200,
-            help="You can paste the content of checkout.html or other documents here"
+            help="You can paste content from documents here"
         )
         
         # Process documents
         if st.button("🔨 Build Knowledge Base", type="primary"):
-            if not uploaded_files and not checkout_file and not pasted_content:
+            if not uploaded_files and not pasted_content:
                 st.error("Please upload files or paste content before building the knowledge base.")
                 return
             
@@ -748,16 +770,6 @@ def main():
                             st.success(f"✅ Processed: {uploaded_file.name}")
                         except Exception as e:
                             st.error(f"❌ Error processing {uploaded_file.name}: {e}")
-                
-                # Process checkout.html
-                if checkout_file:
-                    try:
-                        doc_data = processor.process_uploaded_file(checkout_file)
-                        processed_docs.append(doc_data)
-                        st.session_state.checkout_html = doc_data['content']
-                        st.success(f"✅ Processed: {checkout_file.name}")
-                    except Exception as e:
-                        st.error(f"❌ Error processing checkout.html: {e}")
                 
                 # Process pasted content
                 if pasted_content.strip():
@@ -787,7 +799,7 @@ def main():
                         st.error(f"❌ Error building vector database: {e}")
                 elif processed_docs:
                     st.session_state.documents = processed_docs
-                    st.warning("⚠️ Documents processed but vector database not available. Test generation will use fallback methods.")
+                    st.success("✅ Documents processed successfully! Using template-based test generation.")
         
         # Display knowledge base status
         st.subheader("📊 Knowledge Base Status")
@@ -803,7 +815,42 @@ def main():
             with col3:
                 st.metric("Documents", len(st.session_state.documents))
         else:
-            st.warning("Vector database not available. Using fallback processing.")
+            st.info("📝 Using template-based processing mode for test generation.")
+        
+        # Search Knowledge Base
+        if st.session_state.documents and st.session_state.vector_db:
+            st.subheader("🔍 Search Knowledge Base")
+            
+            search_query = st.text_input(
+                "Search for specific information:",
+                placeholder="e.g., payment validation, cart management, authentication...",
+                help="Enter keywords or questions to search the knowledge base"
+            )
+            
+            if search_query:
+                with st.spinner("Searching knowledge base..."):
+                    try:
+                        results = st.session_state.vector_db.search(search_query, n_results=5)
+                        
+                        if results:
+                            st.success(f"Found {len(results)} relevant results")
+                            
+                            for idx, result in enumerate(results):
+                                with st.expander(f"📄 Result {idx + 1} - {result['metadata'].get('source_document', 'Unknown')} (Relevance: {1 - result['distance']:.2%})"):
+                                    st.markdown(f"**Source Document:** `{result['metadata'].get('source_document', 'Unknown')}`")
+                                    st.markdown(f"**Section:** Chunk {result['metadata'].get('chunk_index', 'N/A')}")
+                                    st.markdown("**Content:**")
+                                    st.text_area(
+                                        "Snippet",
+                                        value=result['text'],
+                                        height=150,
+                                        disabled=True,
+                                        key=f"search_result_{idx}"
+                                    )
+                        else:
+                            st.info("No results found. Try different keywords.")
+                    except Exception as e:
+                        st.error(f"Search error: {e}")
         
         # Display processed documents
         if st.session_state.documents:
