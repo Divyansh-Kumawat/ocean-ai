@@ -197,8 +197,11 @@ class VectorDatabase:
         if not CHROMA_AVAILABLE:
             raise ValueError("ChromaDB not available")
         
+        # Use writable directory for Streamlit Cloud
+        db_path = "/tmp/chroma_db" if "streamlit" in os.environ.get("HOSTNAME", "") or os.environ.get("STREAMLIT_SERVER_PORT") else "./chroma_db"
+        
         # Use new Chroma client API (PersistentClient) per migration guide
-        self.client = chromadb.PersistentClient(path="./chroma_db")
+        self.client = chromadb.PersistentClient(path=db_path)
         self.collection_name = collection_name
         self.collection = None
         self.embedding_model = None
