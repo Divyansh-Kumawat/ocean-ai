@@ -204,7 +204,13 @@ class VectorDatabase:
         self.embedding_model = None
         
         if SENTENCE_TRANSFORMERS_AVAILABLE:
-            self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+            try:
+                # Force CPU mode for Streamlit Cloud compatibility
+                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+            except Exception as e:
+                st.warning(f"Could not initialize SentenceTransformer with CPU: {e}")
+                # Fall back to basic text search without embeddings
+                self.embedding_model = None
     
     def initialize_collection(self):
         """Initialize or get collection"""
