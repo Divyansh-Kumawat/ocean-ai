@@ -1,16 +1,4 @@
 # E-Shop Checkout QA Testing Framework
-
-# Toughest challenge i faced recently while working on my most resent project
-
-The toughest challenge was making sure every AI-generated test case was strictly grounded in the actual project documents like product_specs.md, ui_ux_guide.txt, and checkout.html.
-AI models tend to hallucinate missing requirements, so I had to build a RAG pipeline that:
-parsed HTML and extracted stable selectors,
-semantically chunked UI/UX and spec documents,
-mapped each test case step to an exact source citation,
-and validated whether a requirement actually existed or not.
-Getting the grounding system stable required tuning embeddings, designing metadata filters, and running consistency checks. Once solved, the agent could generate 100% context-driven, non-hallucinated test cases.
-
-# E-Shop Checkout QA Testing Framework
 Deployed Link- https://ocean-ai-assignment-by-divyansh.streamlit.app/
 
 This directory contains a comprehensive testing framework for the E-Shop Checkout application, built according to autonomous QA lead requirements with strict grounding in provided context.
