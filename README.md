@@ -1,6 +1,7 @@
 # E-Shop Checkout QA Testing Framework
 
 #Toughest challenge i faced recently while working on my most resent project
+
 The toughest challenge was making sure every AI-generated test case was strictly grounded in the actual project documents like product_specs.md, ui_ux_guide.txt, and checkout.html.
 AI models tend to hallucinate missing requirements, so I had to build a RAG pipeline that:
 parsed HTML and extracted stable selectors,
